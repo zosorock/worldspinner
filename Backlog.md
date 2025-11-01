@@ -17,147 +17,249 @@ Each story gets a **US-###** ID.
 
 ---
 
-## Day 1 MVP Stories (Critical Priority)
-
-### US-001: Spin Mechanism and Country Selection
-**Status**: Ready
-**Priority**: Critical - Day 1
-
-As a player
-I want to spin a wheel that randomly selects a mystery country
-So that I can start the guessing game with an element of surprise and excitement
-
-**Acceptance Criteria**:
-- [ ] Spin button triggers country selection from hardcoded list of 5-10 countries
-- [ ] Visual spin animation (can be simple CSS rotation, no need for complex physics)
-- [ ] Country is randomly selected from available pool
-- [ ] After spin completes, game transitions to clue display state
-- [ ] Same country is not shown twice in a row
-- [ ] No network calls needed - all data hardcoded in code
-
-**Technical Notes**:
-- Start with 5-10 countries hardcoded directly in code (USA, Japan, Australia, Mexico, France, Egypt, Brazil, Kenya, India, Italy)
-- No separate data files needed for Day 1
-- Focus on functional mechanics, not visual polish
-
----
-
-### US-002: Display Progressive Clues
-**Status**: Ready
-**Priority**: Critical - Day 1
-
-As a player
-I want to see three progressive clues (animal, food, flag) about the mystery country
-So that I can make an educated guess based on the information provided
-
-**Acceptance Criteria**:
-- [ ] Three clues displayed in sequence: Animal → Food → Flag
-- [ ] Animal clue: Display image and 1-sentence description
-- [ ] Food clue: Display image and name of iconic dish
-- [ ] Flag clue: Display flag image
-- [ ] Each clue has a "Next Clue" button (or auto-advance after timer)
-- [ ] All three clues use hardcoded data (images can be placeholder URLs or local assets)
-- [ ] Clues are clearly visible and readable on desktop and mobile
-
-**Technical Notes**:
-- Images can be placeholder URLs initially (flags from public domain, simple animal/food images)
-- Keep layout simple - vertical stack of clues is fine for Day 1
-- No fancy reveal animations needed yet
-
----
-
-### US-003: Accept and Validate Player Guess
-**Status**: Ready
-**Priority**: Critical - Day 1
-
-As a player
-I want to type my guess for the country name and get immediate feedback
-So that I know if I answered correctly or incorrectly
-
-**Acceptance Criteria**:
-- [ ] Text input field for country name
-- [ ] Submit button to confirm guess
-- [ ] Case-insensitive matching (e.g., "usa" matches "USA")
-- [ ] Handles common variations (e.g., "United States", "USA", "America" all match)
-- [ ] Shows "Correct!" message with celebration visual (can be simple text/color change)
-- [ ] Shows "Incorrect - it was [Country Name]" message for wrong answers
-- [ ] After feedback, automatically transitions to discovery card
-
-**Technical Notes**:
-- Hardcode acceptable answer variations for each country
-- No partial credit or spelling suggestions needed for Day 1
-- Simple validation logic is sufficient
-
----
-
-### US-004: Display Discovery Card Rewards
-**Status**: Ready
-**Priority**: Critical - Day 1
-
-As a player
-I want to see an educational discovery card after guessing
-So that I can learn interesting facts about the country
-
-**Acceptance Criteria**:
-- [ ] Discovery card appears after guess (whether correct or incorrect)
-- [ ] Shows country name and flag
-- [ ] Displays 2-3 simple, fun facts about the country
-- [ ] Facts are age-appropriate for 7-12 year olds
-- [ ] "Play Again" button returns to spin screen
-- [ ] Card is visually distinct from game screen (can use simple border/background color)
-
-**Technical Notes**:
-- Facts hardcoded in code with country data
-- No need for elaborate card animations on Day 1
-- Focus on readability and clear presentation
-
----
+## Active Stories
 
 ### US-005: Basic Translation Structure
-**Status**: Ready
-**Priority**: High - Day 1
+**Status**: Ready | **Priority**: High - Day 1
+**Details**: [docs/user-stories/US-005-i18n.md](docs/user-stories/US-005-i18n.md)
 
-As a developer and future contributor
-I want a simple internationalization structure in place
-So that new languages can be added easily without code changes
+Simple internationalization structure for adding new languages easily.
 
-**Acceptance Criteria**:
-- [ ] Create translation JSON files: en.json (English), es.json (Spanish)
-- [ ] Translation keys used for all UI text (buttons, messages, instructions)
-- [ ] Simple useTranslation hook or helper function to access translations
-- [ ] Language switcher UI component (dropdown or buttons for EN/ES)
-- [ ] Selected language persists in localStorage
-- [ ] All game text uses translation keys (no hardcoded English strings in components)
-
-**Technical Notes**:
-- Keep structure flat and simple - no nested namespaces needed yet
-- Start with just English and Spanish
-- Country names and facts can stay in English for Day 1 (only UI translated)
-- Document JSON structure in code comments for future contributors
+**Implementation Tasks**: T-001, T-002, T-003, T-004, T-005 (see below)
 
 ---
 
-### US-006: Minimal UI Layout and Styling
+## Implementation Tasks
+
+### T-001: Create Translation JSON Files and Directory Structure
+**Status**: In Progress
+**Assignee**: Developer
+**Started**: 2025-11-01
+**Parent Story**: US-005
+**Priority**: Critical
+
+**Description**:
+Create the foundational translation file structure with English and Spanish JSON files containing all UI strings from the current application.
+
+**Technical Details**:
+- Create `app/src/locales/` directory
+- Create `en.json` with all English UI strings organized by component/feature
+- Create `es.json` with Spanish translations of the same keys
+- Structure should be simple nested objects (max 2 levels deep)
+- Include comments in a separate `_README.json` explaining the structure
+
+**Key Areas to Extract**:
+- Capytan tips (3 rotating messages)
+- Button labels (Spin Globe, Next Clue, Submit Guess)
+- Clue board labels and empty states
+- Feedback messages (correct, incorrect, validation)
+- Discovery log labels and empty states
+- Form labels and placeholders
+
+**Dependencies**: None
+
+**Acceptance Checklist**:
+- [ ] Tests written and failing (RED complete)
+- [ ] Implementation makes tests pass (GREEN complete)
+- [ ] Code refactored with tests still passing (REFACTOR complete)
+- [ ] `app/src/locales/en.json` created with all UI strings
+- [ ] `app/src/locales/es.json` created with Spanish translations
+- [ ] JSON structure is flat/simple (max 2 levels: category.key)
+- [ ] All current UI strings from App.jsx are represented
+- [ ] JSON files are valid and parse without errors
+- [ ] Spanish translations are accurate and age-appropriate
+- [ ] Unit tests verify JSON structure and completeness
+- [ ] Coverage ≥80% for JSON validation tests
+- [ ] Documentation comment added to each JSON file
+
+---
+
+### T-002: Build useTranslation Hook with localStorage Persistence
 **Status**: Ready
-**Priority**: Medium - Day 1
+**Assignee**: Unassigned
+**Parent Story**: US-005
+**Priority**: Critical
 
-As a player
-I want the game to have a clean, playful visual layout
-So that it feels like a complete game experience
+**Description**:
+Create a custom React hook that provides translation lookup functionality, language switching, and persistent storage of language preference.
 
-**Acceptance Criteria**:
-- [ ] Responsive layout works on desktop (1024px+) and mobile (375px+)
-- [ ] Cheerful color palette featuring teal as primary color
-- [ ] Clear visual hierarchy (headings, buttons, content areas)
-- [ ] Buttons have hover states and clear clickable appearance
-- [ ] Text is readable with good contrast ratios
-- [ ] Simple page transitions between game states (can be fade in/out)
+**Technical Details**:
+- Create `app/src/hooks/useTranslation.js`
+- Hook returns: `{ t, language, setLanguage }`
+- `t(key, variables?)` - translation lookup with simple interpolation
+- `setLanguage(code)` - switches language and persists to localStorage
+- Use `useState` for current language
+- Use `useEffect` to sync with localStorage on mount and language change
+- localStorage key: `worldspinner_language`
+- Support interpolation: `t('feedback.correct', { country: 'Japan' })`
 
-**Technical Notes**:
-- Use Tailwind CSS utility classes
-- No custom animations beyond simple transitions
-- Focus on functional clarity over visual polish
-- Can use default Tailwind color palette with teal-500 as primary
+**Implementation Pattern**:
+```javascript
+// Simple nested key lookup: "buttons.spin" → en.buttons.spin
+// Variable replacement: {country} in string replaced with provided value
+// Fallback: return key itself if translation missing
+```
+
+**Error Handling**:
+- Invalid language code → fall back to 'en'
+- Missing translation key → return the key itself
+- Malformed interpolation → log warning, return string as-is
+
+**Dependencies**: T-001 (needs JSON files to load)
+
+**Acceptance Checklist**:
+- [ ] Tests written and failing (RED complete)
+- [ ] Implementation makes tests pass (GREEN complete)
+- [ ] Code refactored with tests still passing (REFACTOR complete)
+- [ ] Hook correctly loads language from localStorage on mount
+- [ ] Hook defaults to 'en' if no preference saved
+- [ ] `t()` function correctly looks up nested keys
+- [ ] `t()` function performs simple variable interpolation
+- [ ] `setLanguage()` updates state and persists to localStorage
+- [ ] Missing keys return the key string (dev-friendly fallback)
+- [ ] Invalid language codes fall back to 'en'
+- [ ] Unit tests cover all hook behaviors
+- [ ] Tests verify localStorage integration
+- [ ] Coverage ≥80% of hook code
+- [ ] JSDoc comments document hook API
+
+---
+
+### T-003: Create LanguageSwitcher Component
+**Status**: Ready
+**Assignee**: Unassigned
+**Parent Story**: US-005
+**Priority**: High
+
+**Description**:
+Build a simple, accessible UI component that allows users to toggle between English and Spanish languages.
+
+**Technical Details**:
+- Create `app/src/components/LanguageSwitcher.jsx`
+- Use `useTranslation` hook to get current language and setter
+- Render as button toggle or small dropdown (preseed: buttons are simpler)
+- Show flag emojis: 🇺🇸 EN | 🇪🇸 ES
+- Style with Tailwind CSS to match app aesthetic
+- Place in top-right corner of app header/nav area
+- Current language should have distinct active styling
+
+**Design Specs**:
+- Two-button toggle design (simpler than dropdown)
+- Active button: solid background, inactive: outline
+- Compact size, doesn't dominate UI
+- Accessible: proper labels, keyboard navigable
+- Smooth transition when switching (leverage Framer Motion if needed)
+
+**Dependencies**: T-002 (needs useTranslation hook)
+
+**Acceptance Checklist**:
+- [ ] Tests written and failing (RED complete)
+- [ ] Implementation makes tests pass (GREEN complete)
+- [ ] Code refactored with tests still passing (REFACTOR complete)
+- [ ] Component renders two language buttons (EN, ES)
+- [ ] Active language has distinct visual styling
+- [ ] Clicking button calls `setLanguage()` correctly
+- [ ] Component is responsive on mobile and desktop
+- [ ] Accessible: proper ARIA labels and keyboard navigation
+- [ ] Visual design matches app's teal-based aesthetic
+- [ ] Component unit tests verify behavior
+- [ ] Tests verify language switching triggers re-render
+- [ ] Coverage ≥80% of component code
+- [ ] PropTypes defined if component accepts props
+
+---
+
+### T-004: Refactor App.jsx to Use Translation Keys
+**Status**: Ready
+**Assignee**: Unassigned
+**Parent Story**: US-005
+**Priority**: Critical
+
+**Description**:
+Replace all hardcoded English strings in App.jsx with translation key lookups using the `useTranslation` hook. Ensure no English text remains hardcoded in the component.
+
+**Technical Details**:
+- Import and use `useTranslation()` hook at top of App component
+- Replace all string literals with `t()` calls
+- Update feedback messages to use interpolation for dynamic values
+- Add `<LanguageSwitcher />` to top of the app UI
+- Verify all text updates when language switches
+
+**Strings to Replace**:
+- `capytanTips` array → `t('capytan.tip1')`, `t('capytan.tip2')`, `t('capytan.tip3')`
+- Button labels → `t('buttons.spinGlobe')`, etc.
+- Feedback messages → `t('feedback.correct', { country: activeCard.displayName })`
+- Section headers and labels
+- Input placeholders
+- Empty state messages
+
+**Testing Strategy**:
+- Manually verify UI in both EN and ES
+- Ensure no console errors from missing keys
+- Verify dynamic content (country names) interpolates correctly
+
+**Dependencies**: T-002, T-003 (needs hook and switcher component)
+
+**Acceptance Checklist**:
+- [ ] Tests written and failing (RED complete)
+- [ ] Implementation makes tests pass (GREEN complete)
+- [ ] Code refactored with tests still passing (REFACTOR complete)
+- [ ] All hardcoded English strings removed from App.jsx
+- [ ] `useTranslation()` hook integrated at component top
+- [ ] All `t()` calls use correct translation keys
+- [ ] Dynamic values (country names) interpolated correctly
+- [ ] LanguageSwitcher component rendered in UI
+- [ ] App works correctly in both EN and ES modes
+- [ ] No missing translation key warnings in console
+- [ ] Existing functionality unchanged (smoke tests pass)
+- [ ] Unit tests updated to work with translation keys
+- [ ] Coverage ≥80% maintained for App.jsx
+- [ ] ESLint passes with no new warnings
+
+---
+
+### T-005: Add i18n Documentation for Contributors
+**Status**: Ready
+**Assignee**: Unassigned
+**Parent Story**: US-005
+**Priority**: Medium
+
+**Description**:
+Create clear, friendly documentation explaining how community contributors can add new languages to World Spinner.
+
+**Technical Details**:
+- Add "Adding a New Language" section to README.md
+- Create inline comments in `en.json` explaining structure
+- Document the translation key naming conventions
+- Explain the PR process for new languages
+
+**Documentation Should Cover**:
+1. How to create a new `[lang].json` file
+2. Required structure and naming conventions
+3. How to test translations locally
+4. Where to find the language switcher component to add new language option
+5. Submission guidelines (PR process)
+
+**Tone**:
+- Welcoming and beginner-friendly
+- Assume contributor may not be a developer
+- Provide examples and clear steps
+
+**Dependencies**: T-001, T-002, T-003, T-004 (all i18n work complete)
+
+**Acceptance Checklist**:
+- [ ] Tests written and failing (RED complete) - N/A for docs
+- [ ] Implementation makes tests pass (GREEN complete) - N/A for docs
+- [ ] Code refactored with tests still passing (REFACTOR complete) - N/A for docs
+- [ ] README.md has "Adding a New Language" section
+- [ ] Section includes step-by-step instructions
+- [ ] Translation file structure documented with examples
+- [ ] Naming conventions clearly explained
+- [ ] Testing instructions provided
+- [ ] PR submission guidelines included
+- [ ] Inline comments added to en.json for guidance
+- [ ] Documentation reviewed for clarity
+- [ ] Links to relevant files included
 
 ---
 
