@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-11-01
+
+### Changed
+- **Migrated from Create React App to Vite** for faster development and builds
+- Dev server now runs on port 5173 with instant hot module replacement (HMR)
+- Build output directory changed from `build/` to `dist/`
+- Renamed `App.js` to `App.jsx` and `index.js` to `index.jsx` for Vite compatibility
+- Updated Capytan emoji from compass 🧭 to beaver 🦫 (closest to capybara)
+
+### Added
+- `vite.config.js` with React plugin configuration
+- `jest.config.js` for Jest + React testing with Vite
+- Babel presets for Jest (@babel/preset-env, @babel/preset-react)
+
+### Removed
+- Create React App dependencies (react-scripts)
+
 ## [0.1.0] - 2025-11-01
 
 ### Added

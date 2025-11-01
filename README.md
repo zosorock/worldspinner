@@ -12,7 +12,7 @@ World Spinner is an interactive browser game designed for children aged 7-12. Pl
 
 The game uses intellectually stimulating language without oversimplification, encouraging curiosity and deeper learning through exploration.
 
-## ✨ Features (v0.1.0)
+## ✨ Features (v0.1.1)
 
 - 🎡 **Spin the Globe**: Random country selection with smooth animations
 - 🕵️ **Progressive Clues**: Three hints per country (animal, food, flag)
@@ -24,6 +24,7 @@ The game uses intellectually stimulating language without oversimplification, en
 ## 🛠️ Tech Stack
 
 - **Frontend**: React (JavaScript)
+- **Build Tool**: Vite (fast dev server, instant HMR)
 - **Styling**: Tailwind CSS
 - **Animations**: Framer Motion
 - **Testing**: Jest (≥80% coverage)
@@ -58,7 +59,9 @@ WorldSpinner/
 
 ```bash
 # Clone the repository
-cd WorldSpinner/app
+git clone https://github.com/zosorock/worldspinner.git
+
+cd worldspinner/app
 
 # Install dependencies
 npm install
@@ -67,7 +70,7 @@ npm install
 npm start
 ```
 
-The game will open at `http://localhost:3000`
+The game will open at `http://localhost:5173`
 
 ### Running Tests
 
@@ -81,7 +84,7 @@ npm run test:coverage # Generate coverage report
 
 ```bash
 cd app
-npm run build
+npm run build  # Outputs to app/dist/
 ```
 
 ## 🌐 Contributing

@@ -158,8 +158,8 @@ const App = () => {
       >
         <section className="space-y-4 rounded-3xl bg-white px-5 py-6 shadow-sm">
           <div className="flex items-start gap-3">
-            <span className="text-4xl" role="img" aria-label="Capytan the explorer">
-              🧭
+            <span className="text-4xl" role="img" aria-label="Capytan the capybara">
+              🦫
             </span>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Capytan</p>

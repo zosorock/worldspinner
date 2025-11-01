@@ -1,6 +1,7 @@
 # Stack
 
 Frontend: `React` (with JavaScript)
+Build tool: `Vite` (fast dev server, optimized production builds)
 Styling: `Tailwind CSS`
 Animations: `Framer Motion`
 Tests: `Jest` (≥80% coverage of code)
