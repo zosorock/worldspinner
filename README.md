@@ -1,3 +1,5 @@
+<img src="app/public/images/capytan_front.jpeg" alt="Capytan the Capybara - Your Geography Guide" width="250" align="right" style="margin-left: 20px; margin-bottom: 20px;"/>
+
 # 🌍 World Spinner
 
 A geography-based educational adventure game where young explorers unlock countries, discover fascinating facts about animals, foods, cultures, and world history.
