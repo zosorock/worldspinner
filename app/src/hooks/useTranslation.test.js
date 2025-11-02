@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, render, act } from '@testing-library/react';
 import useTranslation from './useTranslation';
 import { TranslationProvider } from '../contexts/TranslationContext';
 
@@ -286,15 +286,36 @@ describe('T-004b: useTranslation Hook (Context Consumer)', () => {
     });
 
     test('multiple components share same language state via Context', () => {
-      const { result: result1 } = renderHook(() => useTranslation(), { wrapper });
-      const { result: result2 } = renderHook(() => useTranslation(), { wrapper });
+      // Create a custom wrapper that renders both hooks under the SAME provider
+      let hook1Result;
+      let hook2Result;
+      let setLanguageCallback;
 
-      // Both should start with 'en'
-      expect(result1.current.language).toBe('en');
-      expect(result2.current.language).toBe('en');
+      const TestComponent = () => {
+        hook1Result = useTranslation();
+        hook2Result = useTranslation();
+        setLanguageCallback = hook1Result.setLanguage;
+        return null;
+      };
 
-      // Note: In reality, both hooks would share the same Provider instance
-      // This test validates the hook can be called multiple times
+      render(
+        <TranslationProvider>
+          <TestComponent />
+        </TranslationProvider>,
+      );
+
+      // Both hooks should share the same language state
+      expect(hook1Result.language).toBe('en');
+      expect(hook2Result.language).toBe('en');
+
+      // Change language via hook1
+      act(() => {
+        setLanguageCallback('es');
+      });
+
+      // Both hooks should reflect the change (proving shared state)
+      expect(hook1Result.language).toBe('es');
+      expect(hook2Result.language).toBe('es');
     });
   });
 
