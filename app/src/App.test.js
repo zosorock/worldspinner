@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { renderWithTranslation } from './test-utils/translationTestUtils';
 import App from './App';
 import countryCards from './data/countryCards';
 
@@ -16,7 +17,7 @@ describe('World Spinner simplified UI', () => {
   });
 
   test('hides discovery cards until a country is found', async () => {
-    render(<App />);
+    renderWithTranslation(<App />);
     expect(screen.queryByText(countryCards[0].displayName)).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
@@ -28,7 +29,7 @@ describe('World Spinner simplified UI', () => {
   });
 
   test('reveals progressive clues after spinning the globe', async () => {
-    render(<App />);
+    renderWithTranslation(<App />);
 
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
     expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
@@ -38,7 +39,7 @@ describe('World Spinner simplified UI', () => {
   });
 
   test('clears the guess input on submit and shows success feedback', async () => {
-    render(<App />);
+    renderWithTranslation(<App />);
 
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
 
@@ -51,7 +52,7 @@ describe('World Spinner simplified UI', () => {
   });
 
   test('prompts the player to spin before guessing and rotates tips', async () => {
-    render(<App />);
+    renderWithTranslation(<App />);
 
     const guessField = screen.getByLabelText(/guess the country/i);
     await userEvent.type(guessField, 'Somewhere');
@@ -85,12 +86,12 @@ describe('App.jsx Translation Integration (T-004)', () => {
     test('imports and uses useTranslation hook at component top level', () => {
       // This test verifies the hook is imported and used
       // If this test runs without errors, the hook is integrated
-      render(<App />);
+      renderWithTranslation(<App />);
       expect(screen.getByRole('button', { name: /spin the globe/i })).toBeInTheDocument();
     });
 
     test('renders LanguageSwitcher component in UI', () => {
-      render(<App />);
+      renderWithTranslation(<App />);
       // LanguageSwitcher should render language toggle buttons
       const buttons = screen.getAllByRole('button');
       // Should have at least: Spin, Next Clue, Submit, EN, ES buttons
@@ -100,33 +101,33 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
   describe('Translation key usage', () => {
     test('uses t() for Capytan tips instead of hardcoded strings', () => {
-      render(<App />);
+      renderWithTranslation(<App />);
       // Verify tips are translated
       expect(screen.getByText(/Spin the globe to meet a mystery country/i)).toBeInTheDocument();
     });
 
     test('uses t() for button labels', () => {
-      render(<App />);
+      renderWithTranslation(<App />);
       expect(screen.getByRole('button', { name: /spin the globe/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /next clue/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /submit guess/i })).toBeInTheDocument();
     });
 
     test('uses t() for section headers', () => {
-      render(<App />);
+      renderWithTranslation(<App />);
       expect(screen.getByText(/clue board/i)).toBeInTheDocument();
       expect(screen.getByText(/discovery log/i)).toBeInTheDocument();
     });
 
     test('uses t() for form labels and placeholders', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
       const input = screen.getByLabelText(/guess the country/i);
       expect(input).toBeInTheDocument();
       expect(input).toHaveAttribute('placeholder', expect.stringMatching(/type your best guess/i));
     });
 
     test('uses t() for empty state messages', () => {
-      render(<App />);
+      renderWithTranslation(<App />);
       expect(screen.getByText(/spin the globe to get your first animal clue/i)).toBeInTheDocument();
       expect(screen.getByText(/no cards yet/i)).toBeInTheDocument();
     });
@@ -134,7 +135,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
   describe('Dynamic value interpolation', () => {
     test('interpolates country name in success feedback message', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
       const guessField = screen.getByLabelText(/guess the country/i);
@@ -146,7 +147,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
     });
 
     test('shows clue counter with interpolated values', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
       // Should show clue counter like "1/3"
@@ -158,7 +159,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
     });
 
     test('shows discovery counter with interpolated values', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       // Initially should show 0/30 (or whatever total is)
       expect(screen.getByText(new RegExp(`0/${countryCards.length}`))).toBeInTheDocument();
@@ -176,7 +177,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
   describe('No hardcoded English strings', () => {
     test('does not contain hardcoded button text', () => {
-      render(<App />);
+      renderWithTranslation(<App />);
       // If implementation is correct, these should be translation keys, not raw strings
       // The buttons should render with translated text
       const spinButton = screen.getByRole('button', { name: /spin the globe/i });
@@ -184,7 +185,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
     });
 
     test('shows error feedback using translation keys', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
       const guessField = screen.getByLabelText(/guess the country/i);
@@ -196,7 +197,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
     });
 
     test('shows empty guess feedback using translation keys', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       const guessField = screen.getByLabelText(/guess the country/i);
       await userEvent.type(guessField, '   '); // Just whitespace
@@ -209,7 +210,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
   describe('Functionality preserved', () => {
     test('app functionality unchanged - can still discover countries', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       // Spin globe
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
@@ -225,7 +226,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
     });
 
     test('clue progression still works', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
       expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
@@ -235,7 +236,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
     });
 
     test('tip rotation still works', async () => {
-      render(<App />);
+      renderWithTranslation(<App />);
 
       const initialTip = screen.getByText(/Spin the globe to meet a mystery country/i);
       expect(initialTip).toBeInTheDocument();
