@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 - **T-001 (6924c13): Translation JSON structure** - Created `app/src/locales/` directory with `en.json` (English) and `es.json` (Spanish) translation files containing all UI strings from App.jsx, organized by component/feature with max 2-level nesting. Added `_README.json` documenting structure and guidelines. Includes comprehensive test suite validating JSON structure, key matching, and required UI string presence.
-- **T-001 (725775c): Documentation comments** - Added `_comment` field to both `en.json` and `es.json` files explaining their purpose as inline documentation. Updated test suite to validate presence of documentation comments, preventing regression if comments are removed.
+- **T-001 (0edca94): Documentation comments** - Added `_comment` field to both `en.json` and `es.json` files explaining their purpose as inline documentation. Updated test suite to validate presence of documentation comments, preventing regression if comments are removed.
 
 ## [0.1.1] - 2025-11-01
 
