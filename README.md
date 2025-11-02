@@ -14,7 +14,7 @@ World Spinner is an interactive browser game designed for children aged 7-12. Pl
 
 The game uses intellectually stimulating language without oversimplification, encouraging curiosity and deeper learning through exploration.
 
-## ✨ Features (v0.1.1)
+## ✨ Features (v0.2.0)
 
 - 🎡 **Spin the Globe**: Random country selection with smooth animations
 - 🕵️ **Progressive Clues**: Three hints per country (animal, food, flag)
@@ -22,7 +22,9 @@ The game uses intellectually stimulating language without oversimplification, en
 - 🎉 **Discovery Cards**: Educational facts about each unlocked country
 - 📱 **Responsive Design**: Works seamlessly on phones, tablets, and laptops
 - 🎨 **Polished UI**: Teal color theme with Framer Motion animations
-
+- 🌐 **Internationalization (NEW)**: Full English and Spanish language support with easy-to-use language switcher
+- 🔄 **Language Persistence (NEW)**: Your language preference is saved between sessions
+- 👥 **Translation-Ready (NEW)**: Community-friendly structure for adding new languages
 ## 🛠️ Tech Stack
 
 - **Frontend**: React (JavaScript)
