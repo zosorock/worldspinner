@@ -1,3 +1,5 @@
+<img src="app/public/images/capytan_front.jpeg" alt="Capytan the Capybara - Your Geography Guide" width="250" align="right" style="margin-left: 20px; margin-bottom: 20px;"/>
+
 # 🌍 World Spinner
 
 A geography-based educational adventure game where young explorers unlock countries, discover fascinating facts about animals, foods, cultures, and world history.
@@ -52,7 +54,7 @@ WorldSpinner/
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js (v22 or higher)
 - npm or yarn
 
 ### Installation
@@ -91,9 +93,182 @@ npm run build  # Outputs to app/dist/
 
 We welcome contributions, especially translations! World Spinner is designed to be easily translatable so children around the world can learn geography in their native language.
 
-### Translation Support (Coming in v0.2.0)
+### Adding a New Language
 
-We're building internationalization infrastructure to support community translations. If you'd like to help translate the game into your language, check [Ideas.md](./Ideas.md) for i18n plans.
+Want to help kids learn in their language? We'd love your help! Follow these beginner-friendly steps:
+
+#### Step 1: Create Your Translation File
+
+1. Navigate to the `app/src/locales/` directory
+2. Copy `en.json` and rename it using the [ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for your language:
+   - French: `fr.json`
+   - German: `de.json`
+   - Portuguese: `pt.json`
+   - Japanese: `ja.json`
+   - And so on...
+
+#### Step 2: Translate the Content
+
+Open your new file and translate **only the values** (the text in quotes after the `:`) — keep all the keys in English!
+
+**Good example:**
+```json
+{
+  "buttons": {
+    "spinGlobe": "🎡 Faire tourner le globe"
+  }
+}
+```
+
+**Bad example** (don't translate the keys):
+```json
+{
+  "boutons": {
+    "faireTournerLeGlobe": "🎡 Faire tourner le globe"
+  }
+}
+```
+
+**Important guidelines:**
+- **Keep the structure**: Your file must have the exact same nested structure as `en.json` (max 2 levels deep)
+- **Keep the keys**: Never translate the keys like `buttons`, `spinGlobe`, `feedback`, etc.
+- **Keep the emojis**: Button emojis (🎡, 🔍, ✍️) are visual cues that work in any language
+- **Keep the placeholders**: Text like `{country}` or `{current}/{total}` are replaced by the game — don't translate these
+- **Age-appropriate language**: World Spinner is for kids ages 7-12, so keep translations simple and friendly
+- **Add a comment**: Include a `_comment` field at the top describing your translation (see `en.json` for an example)
+
+#### Step 3: Register Your Language in the App
+
+Your translation file is ready! Now you need to register it in two places:
+
+**3a. Import your translation in TranslationContext**
+
+Edit `app/src/contexts/TranslationContext.jsx`:
+
+1. Import your translation file (around line 12):
+   ```jsx
+   import frTranslations from '../locales/fr.json';
+   ```
+
+2. Add your language to `VALID_LANGUAGES` array (around line 15):
+   ```jsx
+   const VALID_LANGUAGES = ['en', 'es', 'fr'];
+   ```
+
+3. Add your translations to the `translations` map (around line 18):
+   ```jsx
+   const translations = {
+     en: enTranslations,
+     es: esTranslations,
+     fr: frTranslations,
+   };
+   ```
+
+**3b. Add a language button to the Switcher**
+
+Edit `app/src/components/LanguageSwitcher.jsx`:
+
+1. Find the existing language buttons (around lines 50-83)
+2. Copy one of the existing button blocks (EN or ES)
+3. Update the button with your language code, flag emoji, and aria-label
+
+**Example for French:**
+```jsx
+<motion.button
+  type="button"
+  onClick={() => handleLanguageClick('fr')}
+  className={getButtonClasses(language === 'fr')}
+  aria-label="Passer au français"
+  aria-pressed={language === 'fr'}
+  whileTap={{ scale: 0.95 }}
+>
+  <span className="flex items-center gap-1.5">
+    <span role="img" aria-label="French flag">
+      🇫🇷
+    </span>
+    <span>FR</span>
+  </span>
+</motion.button>
+```
+
+#### Step 4: Test Your Translation
+
+**First time?** Install dependencies:
+```bash
+cd app
+npm install
+```
+
+**Run automated tests** to verify your translation file structure:
+
+```bash
+npm test -- locales.test.js
+```
+
+The tests will verify:
+- Your JSON file is valid
+- All keys match the English version exactly
+- The structure is max 2 levels deep
+- You included a `_comment` field
+
+**Common test failures:**
+- "keys do not match" → You added/removed a translation key. Copy the structure from `en.json` again.
+- "structure is not max 2 levels deep" → You nested categories too deep. Keep it to 2 levels max.
+- "does not have documentation comment" → Add a `_comment` field at the top of your file.
+
+**Manual testing:**
+```bash
+npm start
+```
+
+Then click your language button and explore the app to make sure everything looks good!
+
+#### Step 5: Submit Your Translation
+
+**Option A: Using Git (recommended for developers)**
+
+1. **Fork this repository** on GitHub
+2. **Create a new branch** for your translation:
+   ```bash
+   git checkout -b add-french-translation
+   ```
+3. **Commit your changes**:
+   ```bash
+   git add app/src/locales/fr.json app/src/contexts/TranslationContext.jsx app/src/components/LanguageSwitcher.jsx
+   git commit -m "Add French translation"
+   ```
+4. **Push to your fork**:
+   ```bash
+   git push origin add-french-translation
+   ```
+5. **Open a Pull Request** on GitHub
+
+**Option B: Using GitHub's web interface (easier for non-developers)**
+
+1. **Fork this repository** using the "Fork" button on GitHub
+2. Navigate to the files you modified in your fork
+3. Click "Add file" → "Upload files" to upload your new `fr.json`
+4. Click the pencil icon (Edit) to modify `TranslationContext.jsx` and `LanguageSwitcher.jsx`
+5. Create a Pull Request from your fork's main page
+
+**In your Pull Request, include:**
+- A clear title: "Add [Language] translation"
+- A description mentioning you followed the translation guide
+- Any questions or notes about translation choices
+
+We'll review your contribution and may ask questions about specific translation choices. Don't worry — we're here to help!
+
+#### Translation Files Reference
+
+- **Main translations**: [app/src/locales/en.json](app/src/locales/en.json) (template to copy)
+- **Guidelines**: [app/src/locales/_README.json](app/src/locales/_README.json) (technical reference)
+- **Translation registration**: [app/src/contexts/TranslationContext.jsx](app/src/contexts/TranslationContext.jsx) (import and register your language)
+- **Language switcher**: [app/src/components/LanguageSwitcher.jsx](app/src/components/LanguageSwitcher.jsx) (add your button here)
+- **Translation tests**: [app/src/locales/locales.test.js](app/src/locales/locales.test.js) (validates structure)
+
+#### Questions?
+
+Not sure about something? Open an issue on GitHub with the "translation" label and we'll be happy to help!
 
 ### Development Workflow
 
@@ -114,7 +289,7 @@ See [Ideas.md](./Ideas.md) for all planned features.
 
 ## 🙏 Acknowledgments
 
-This game was entirely inspired by eldest son, Liam, boundless love for learning, with contributions from my creative director, Nolan (my youngest) and advise, supervision, and production assistance from my lovely and multi-talented wife, Carolina. You three are the best thing that ever happened to me. 🥰
+This game was entirely inspired by my eldest son, Liam, boundless love for learning, with contributions from my creative director, Nolan (my youngest) and advise, supervision, and production assistance from my lovely and multi-talented wife, Carolina. You three are the best things that ever happened to me. 🥰
 
 Built with curiosity, exploration, and a love of learning in mind.
 

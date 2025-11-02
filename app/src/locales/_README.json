@@ -1,0 +1,31 @@
+{
+  "description": "Translation files for World Spinner internationalization (i18n). Each language has its own JSON file with matching keys.",
+  "structure": {
+    "note": "Translation files use a simple nested structure with a maximum of 2 levels deep",
+    "format": "category.key format, e.g., 'buttons.spinGlobe' or 'feedback.correct'",
+    "interpolation": "Use {variableName} for dynamic values, e.g., 'Hello {name}' or 'You discovered {country}'"
+  },
+  "categories": {
+    "capytan": "Tips and messages from Capytan the capybara guide",
+    "buttons": "All button labels throughout the application",
+    "clueBoard": "Clue board section headers, labels, and empty states",
+    "feedback": "User feedback messages (success, error, info)",
+    "discoveryLog": "Discovery log section headers, labels, and empty states",
+    "form": "Form field labels and placeholder text"
+  },
+  "addingLanguages": {
+    "step1": "Create a new JSON file named with the ISO 639-1 language code (e.g., fr.json for French)",
+    "step2": "Copy the structure from en.json",
+    "step3": "Translate all values while keeping the keys in English",
+    "step4": "Ensure the structure remains max 2 levels deep",
+    "step5": "Test that all keys match exactly with en.json",
+    "step6": "Submit a pull request with your new translation file"
+  },
+  "guidelines": {
+    "keepKeysInEnglish": "Always keep the JSON keys in English (e.g., 'buttons.spinGlobe'), only translate the values",
+    "maintainStructure": "Keep the same nesting structure as en.json",
+    "testLocally": "Run 'npm test' to verify your translation file is valid and has matching keys",
+    "ageAppropriate": "World Spinner is for kids ages 7-12, keep translations simple and friendly",
+    "preserveEmojis": "Keep emojis in button labels as they are universal visual cues"
+  }
+}

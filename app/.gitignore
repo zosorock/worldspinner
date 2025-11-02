@@ -1,9 +1,17 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
+# Node.js/Vite/TS-generated files
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
 .pnp.js
+dist/
+build/
+*.log
+coverage/
+.nyc_output/
+.eslintcache
+tsconfig.tsbuildinfo
 
 # testing
 /coverage
@@ -17,7 +25,3 @@
 .env.development.local
 .env.test.local
 .env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*

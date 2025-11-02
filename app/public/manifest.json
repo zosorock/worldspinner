@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "World Spinner",
+  "name": "World Spinner - A geography adventure game for young explorers ages 7-12",
   "icons": [
     {
       "src": "favicon.ico",

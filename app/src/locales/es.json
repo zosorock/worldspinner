@@ -1,0 +1,55 @@
+{
+  "_comment": "Traducciones en español para la interfaz de World Spinner. Este archivo contiene todas las cadenas visibles para el usuario de la aplicación.",
+  "_translationGuide": {
+    "_comment": "GUÍA DE TRADUCCIÓN: ¡Lee esto antes de traducir!",
+    "_instruction1": "Solo traduce los VALORES (texto después de los dos puntos), nunca las CLAVES",
+    "_instruction2": "Mantén los emojis como 🎡 🔍 ✍️ tal cual son pistas visuales universales",
+    "_instruction3": "Mantén los marcadores como {country}, {current}, {total} exactamente como están escritos",
+    "_instruction4": "Mantén la misma estructura anidada (máximo 2 niveles de profundidad)",
+    "_instruction5": "Usa lenguaje apropiado para niños de 7-12 años",
+    "_instruction6": "Prueba tu traducción con: npm test -- locales.test.js",
+    "_example": "Bien: 'spinGlobe': '🎡 Girar el Globo' | Mal: 'girarElGlobo': 'Spin the Globe'"
+  },
+  "capytan": {
+    "_comment": "Mensajes de Capytan el carpincho, el personaje guía amigable del juego",
+    "label": "Capytan",
+    "ariaLabel": "Capytan el carpincho",
+    "tip1": "Gira el globo para conocer un país misterioso.",
+    "tip2": "Usa la siguiente pista si la primera parece difícil.",
+    "tip3": "¡Las respuestas correctas ganan una nueva tarjeta de descubrimiento!"
+  },
+  "buttons": {
+    "_comment": "Etiquetas para todos los botones interactivos del juego. ¡Mantén los prefijos emoji!",
+    "spinGlobe": "🎡 Girar el Globo",
+    "nextClue": "🔍 Siguiente Pista",
+    "submitGuess": "✍️ Enviar Respuesta"
+  },
+  "clueBoard": {
+    "_comment": "Texto para la sección del tablero de pistas donde se muestran las pistas progresivas",
+    "header": "Tablero de Pistas",
+    "emptyState": "Gira el globo para obtener tu primera pista animal.",
+    "clueCounter": "{current}/{total}"
+  },
+  "feedback": {
+    "_comment": "Mensajes de retroalimentación para el usuario. {country} será reemplazado con el nombre real del país.",
+    "correct": "¡Sí! Descubriste {country}. Gira de nuevo para un nuevo misterio.",
+    "incorrect": "No exactamente. Mira otra pista e intenta de nuevo.",
+    "emptyGuess": "Escribe el nombre de un país antes de adivinar.",
+    "noActiveCountry": "Gira el globo para comenzar tu aventura."
+  },
+  "discoveryLog": {
+    "_comment": "Etiquetas para el registro de descubrimientos donde se muestran los países desbloqueados",
+    "header": "Registro de Descubrimientos",
+    "emptyState": "Aún no hay tarjetas. Gira el globo y sigue las pistas para desbloquear tu primer país.",
+    "counter": "{discovered}/{total}"
+  },
+  "form": {
+    "_comment": "Etiquetas de campos de formulario y texto de marcador de posición para entrada del usuario",
+    "guessLabel": "Adivina el País",
+    "guessPlaceholder": "Escribe tu mejor respuesta..."
+  },
+  "ariaLabels": {
+    "_comment": "Etiquetas de accesibilidad para lectores de pantalla. {country} será reemplazado con el nombre del país.",
+    "countryFlag": "bandera de {country}"
+  }
+}

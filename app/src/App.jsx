@@ -2,12 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
 import countryCards from './data/countryCards';
-
-const capytanTips = [
-  'Spin the globe to meet a mystery country.',
-  'Use the next clue if the first one feels tricky.',
-  'Correct guesses earn a new discovery card!',
-];
+import useTranslation from './hooks/useTranslation';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 const normaliseGuess = (value) => value.trim().toLowerCase();
 
@@ -34,7 +30,7 @@ FeedbackBanner.propTypes = {
   message: PropTypes.string.isRequired,
 };
 
-const DiscoveryItem = ({ card }) => (
+const DiscoveryItem = ({ card, t }) => (
   <motion.li
     layout
     initial={{ opacity: 0, y: 6 }}
@@ -45,7 +41,7 @@ const DiscoveryItem = ({ card }) => (
       <span className="text-2xl" role="img" aria-label={card.displayName}>
         {card.emoji}
       </span>
-      <span className="text-2xl" role="img" aria-label={`${card.displayName} flag`}>
+      <span className="text-2xl" role="img" aria-label={t('ariaLabels.countryFlag', { country: card.displayName })}>
         {card.flag}
       </span>
     </div>
@@ -72,15 +68,19 @@ DiscoveryItem.propTypes = {
       history: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
+  t: PropTypes.func.isRequired,
 };
 
 const App = () => {
+  const { t } = useTranslation();
   const [activeCountryId, setActiveCountryId] = useState(null);
   const [clueIndex, setClueIndex] = useState(0);
   const [guess, setGuess] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [tipIndex, setTipIndex] = useState(0);
   const [discoveredIds, setDiscoveredIds] = useState([]);
+
+  const capytanTips = [t('capytan.tip1'), t('capytan.tip2'), t('capytan.tip3')];
 
   const activeCard = useMemo(() => countryCards.find((card) => card.id === activeCountryId) ?? null, [activeCountryId]);
 
@@ -112,7 +112,7 @@ const App = () => {
     if (!trimmedGuess) {
       setFeedback({
         type: 'info',
-        message: 'Type a country name before guessing.',
+        message: t('feedback.emptyGuess'),
       });
       setGuess('');
       return;
@@ -121,7 +121,7 @@ const App = () => {
     if (!activeCard) {
       setFeedback({
         type: 'info',
-        message: 'Spin the globe to start your adventure.',
+        message: t('feedback.noActiveCountry'),
       });
       setGuess('');
       return;
@@ -136,13 +136,13 @@ const App = () => {
     if (acceptedGuesses.has(normaliseGuess(trimmedGuess))) {
       setFeedback({
         type: 'success',
-        message: `Yes! You discovered ${activeCard.displayName}. Spin again for a new mystery.`,
+        message: t('feedback.correct', { country: activeCard.displayName }),
       });
       setDiscoveredIds((prev) => (prev.includes(activeCard.id) ? prev : [...prev, activeCard.id]));
     } else {
       setFeedback({
         type: 'error',
-        message: 'Not quite. Peek at another clue and try again.',
+        message: t('feedback.incorrect'),
       });
     }
 
@@ -156,13 +156,17 @@ const App = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mx-auto flex w-full max-w-md flex-col gap-6"
       >
+        <div className="flex justify-end">
+          <LanguageSwitcher />
+        </div>
+
         <section className="space-y-4 rounded-3xl bg-white px-5 py-6 shadow-sm">
           <div className="flex items-start gap-3">
-            <span className="text-4xl" role="img" aria-label="Capytan the capybara">
+            <span className="text-4xl" role="img" aria-label={t('capytan.ariaLabel')}>
               🦫
             </span>
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Capytan</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{t('capytan.label')}</p>
               <p className="text-lg font-semibold text-slate-800">{capytanTips[tipIndex]}</p>
             </div>
           </div>
@@ -171,21 +175,25 @@ const App = () => {
             onClick={spinGlobe}
             className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95"
           >
-            🎡 Spin the Globe
+            {t('buttons.spinGlobe')}
           </button>
         </section>
 
         <section className="space-y-4 rounded-3xl bg-white px-5 py-6 shadow-sm">
           <header className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">Clue Board</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
+              {t('clueBoard.header')}
+            </h2>
             <span className="text-xs text-slate-400">
-              {activeCard ? `${clueIndex + 1}/${activeCard.clues.length}` : '0/3'}
+              {activeCard
+                ? t('clueBoard.clueCounter', { current: clueIndex + 1, total: activeCard.clues.length })
+                : t('clueBoard.clueCounter', { current: 0, total: 3 })}
             </span>
           </header>
           {currentClue ? (
             <p className="text-base leading-relaxed text-slate-700">{currentClue.text}</p>
           ) : (
-            <p className="text-base text-slate-600">Spin the globe to get your first animal clue.</p>
+            <p className="text-base text-slate-600">{t('clueBoard.emptyState')}</p>
           )}
           <button
             type="button"
@@ -193,18 +201,18 @@ const App = () => {
             disabled={!activeCard || clueIndex >= (activeCard?.clues.length ?? 0) - 1}
             className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
           >
-            🔍 Next Clue
+            {t('buttons.nextClue')}
           </button>
           <form className="space-y-3" onSubmit={handleGuessSubmit} noValidate>
             <label htmlFor="guess" className="space-y-2">
-              <span className="text-sm font-semibold text-slate-700">Guess the Country</span>
+              <span className="text-sm font-semibold text-slate-700">{t('form.guessLabel')}</span>
               <input
                 id="guess"
                 name="guess"
                 type="text"
                 value={guess}
                 onChange={(event) => setGuess(event.target.value)}
-                placeholder="Type your best guess..."
+                placeholder={t('form.guessPlaceholder')}
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-semibold text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
               />
             </label>
@@ -212,7 +220,7 @@ const App = () => {
               type="submit"
               className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-base font-semibold text-white transition active:scale-95"
             >
-              ✍️ Submit Guess
+              {t('buttons.submitGuess')}
             </button>
           </form>
         </section>
@@ -221,19 +229,19 @@ const App = () => {
 
         <section className="space-y-4 rounded-3xl bg-white px-5 py-6 shadow-sm">
           <header className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">Discovery Log</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
+              {t('discoveryLog.header')}
+            </h2>
             <span className="text-xs text-slate-400">
-              {discoveredCards.length}/{countryCards.length}
+              {t('discoveryLog.counter', { discovered: discoveredCards.length, total: countryCards.length })}
             </span>
           </header>
           {discoveredCards.length === 0 ? (
-            <p className="text-sm text-slate-600">
-              No cards yet. Spin the globe and follow the clues to unlock your first country.
-            </p>
+            <p className="text-sm text-slate-600">{t('discoveryLog.emptyState')}</p>
           ) : (
             <ul className="space-y-3">
               {discoveredCards.map((card) => (
-                <DiscoveryItem key={card.id} card={card} />
+                <DiscoveryItem key={card.id} card={card} t={t} />
               ))}
             </ul>
           )}
