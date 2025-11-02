@@ -1,6 +1,6 @@
 # 🌍 World Spinner – React + Vite
 
-A five-card, kid-friendly demo for the **World Spinner** geography game. Capytan the capybara host guides players through spinning a virtual globe, uncovering animal/food/flag clues, and unlocking discovery cards inspired by `prompt_init.md`, `Ideas.md`, and the stack guidelines in `Stack.md`.
+A kid-friendly geography game. Capytan the capybara host guides players through spinning a virtual globe, uncovering animal/food/flag clues, and unlocking discovery cards inspired by `Ideas.md`, and the stack guidelines in `Stack.md`.
 
 ## ✨ What's Included
 - **React + Vite + Tailwind + Framer Motion** mobile-friendly layout with emoji-first visuals.

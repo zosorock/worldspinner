@@ -128,7 +128,7 @@ See [Ideas.md](./Ideas.md) for all planned features.
 
 ## 🙏 Acknowledgments
 
-This game was entirely inspired by eldest son, Liam, boundless love for learning, with contributions from my creative director, Nolan (my youngest) and advise, supervision, and production assistance from my lovely and multi-talented wife, Carolina. You three are the best thing that ever happened to me. 🥰
+This game was entirely inspired by my eldest son, Liam, boundless love for learning, with contributions from my creative director, Nolan (my youngest) and advise, supervision, and production assistance from my lovely and multi-talented wife, Carolina. You three are the best things that ever happened to me. 🥰
 
 Built with curiosity, exploration, and a love of learning in mind.
 
