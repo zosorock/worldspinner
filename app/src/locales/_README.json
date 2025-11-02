@@ -25,7 +25,7 @@
     "keepKeysInEnglish": "Always keep the JSON keys in English (e.g., 'buttons.spinGlobe'), only translate the values",
     "maintainStructure": "Keep the same nesting structure as en.json",
     "testLocally": "Run 'npm test' to verify your translation file is valid and has matching keys",
-    "ageAppropriate": "World Spinner is for kids ages 6-10, keep translations simple and friendly",
+    "ageAppropriate": "World Spinner is for kids ages 7-12, keep translations simple and friendly",
     "preserveEmojis": "Keep emojis in button labels as they are universal visual cues"
   }
 }

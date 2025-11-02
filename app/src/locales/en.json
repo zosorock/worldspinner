@@ -1,6 +1,17 @@
 {
   "_comment": "English translations for World Spinner UI. This file contains all user-facing strings for the application.",
+  "_translationGuide": {
+    "_comment": "TRANSLATION GUIDE: Read this before translating!",
+    "_instruction1": "Only translate the VALUES (text after the colon), never the KEYS",
+    "_instruction2": "Keep emojis like 🎡 🔍 ✍️ as they are universal visual cues",
+    "_instruction3": "Keep placeholders like {country}, {current}, {total} exactly as written",
+    "_instruction4": "Maintain the same nested structure (max 2 levels deep)",
+    "_instruction5": "Use age-appropriate language for children ages 7-12",
+    "_instruction6": "Test your translation with: npm test -- locales.test.js",
+    "_example": "Good: 'spinGlobe': '🎡 Faire tourner le globe' | Bad: 'faireTournerLeGlobe': 'Spin the Globe'"
+  },
   "capytan": {
+    "_comment": "Messages from Capytan the capybara, the friendly game guide character",
     "label": "Capytan",
     "ariaLabel": "Capytan the capybara",
     "tip1": "Spin the globe to meet a mystery country.",
@@ -8,31 +19,37 @@
     "tip3": "Correct guesses earn a new discovery card!"
   },
   "buttons": {
+    "_comment": "Labels for all interactive buttons throughout the game. Keep the emoji prefixes!",
     "spinGlobe": "🎡 Spin the Globe",
     "nextClue": "🔍 Next Clue",
     "submitGuess": "✍️ Submit Guess"
   },
   "clueBoard": {
+    "_comment": "Text for the clue board section where progressive hints are displayed",
     "header": "Clue Board",
     "emptyState": "Spin the globe to get your first animal clue.",
     "clueCounter": "{current}/{total}"
   },
   "feedback": {
+    "_comment": "User feedback messages. {country} will be replaced with the actual country name.",
     "correct": "Yes! You discovered {country}. Spin again for a new mystery.",
     "incorrect": "Not quite. Peek at another clue and try again.",
     "emptyGuess": "Type a country name before guessing.",
     "noActiveCountry": "Spin the globe to start your adventure."
   },
   "discoveryLog": {
+    "_comment": "Labels for the discovery log where unlocked countries are displayed",
     "header": "Discovery Log",
     "emptyState": "No cards yet. Spin the globe and follow the clues to unlock your first country.",
     "counter": "{discovered}/{total}"
   },
   "form": {
+    "_comment": "Form field labels and placeholder text for user input",
     "guessLabel": "Guess the Country",
     "guessPlaceholder": "Type your best guess..."
   },
   "ariaLabels": {
+    "_comment": "Accessibility labels for screen readers. {country} will be replaced with the country name.",
     "countryFlag": "{country} flag"
   }
 }

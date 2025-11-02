@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) where applicable.
 
+
 ## [Unreleased]
+
+
+## [0.2.0] - 2025-11-02
+
+### Summary
+Complete internationalization (i18n) infrastructure for World Spinner with English and Spanish language support. Implements React Context architecture for shared translation state, accessible language switcher component, and comprehensive test coverage.
+
+### Added
+- **T-005 (9c4accd): i18n Contributor Documentation** - Created comprehensive, beginner-friendly documentation for community members who want to add new languages to World Spinner. Added detailed "Adding a New Language" section to README.md with 5 step-by-step subsections: (1) creating translation file with ISO 639-1 codes, (2) translating content with good/bad examples, (3) registering language in TranslationContext.jsx (import, VALID_LANGUAGES, translations map) and adding button to LanguageSwitcher.jsx with code examples, (4) testing translations with corrected command `npm test -- locales.test.js` including troubleshooting guide for common failures, (5) submitting PRs via Git CLI or GitHub web UI (accessible for non-developers). Enhanced both `en.json` and `es.json` with inline `_translationGuide` section containing 6 instructions and examples plus contextual `_comment` fields in every category (capytan, buttons, clueBoard, feedback, discoveryLog, form, ariaLabels). Translation guide emphasizes: only translate values not keys, keep emojis/placeholders unchanged, maintain 2-level structure, use age-appropriate language for ages 7-12. Includes reference links to translation files, TranslationContext.jsx, language switcher component, and validation tests. Documentation welcomes non-developers with friendly tone, concrete examples, and offers help via GitHub issues. All 104 tests passing after documentation updates.
 
 ### Fixed
 - **T-004d (3bdd085): ESLint Errors in locales.test.js** - Resolved 7 ESLint errors in T-001's test file to achieve zero-error lint status (DoD requirement). Refactored `extractLeafKeys()` function from `for...of` loop to `.reduce()` pattern (fixes no-restricted-syntax violation, following T-002 precedent lines 109-115). Renamed `_comment` variable references to `commentField` with bracket notation (fixes 6 no-underscore-dangle violations). All 104 tests still pass after refactoring (18/18 in locales.test.js), proving no behavioral changes. ESLint now reports 0 errors across entire codebase. Refactoring-only task, no functional changes.
