@@ -777,7 +777,7 @@ const countryCards = [
       greeting: '"Hello!" in English, the official language.',
       fossil: '🦕 Ancient sloth fossils have been found in Guyana\'s soils.',
       history: '🏺 Indigenous Arawak people fished and farmed along the coasts.',
-      space: '🪐 Guyana watches neighboring space launches from French Guiana.',
+      space: '🪐 Guyana’s Space Research Unit develops satellites to monitor deforestation and climate change from orbit.',
     },
   },
   {

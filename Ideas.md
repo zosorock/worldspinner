@@ -134,4 +134,29 @@ Each entry gets an **I-###** ID.
 - **I-024** Community Translation Guide
   - **source:** Product Owner
   - **date:** 2025-11-01
+  - **priority:** 7
   - **notes:** Simple CONTRIBUTING.md section explaining how community members can add a new language. Include JSON structure, naming conventions, and basic PR guidelines. Keep it lightweight and welcoming. Deferred: Automated validation tools, translation management platforms, complex review workflows.
+
+- **I-025** Internationalize ARIA Label Attributes for Accessibility
+  - **source:** Code Reviewer (T-001 review via ask-codex)
+  - **date:** 2025-11-01
+  - **priority:** 4
+  - **notes:** Externalize hardcoded ARIA label strings in App.jsx to translation files (en.json, es.json) to support screen readers in multiple languages. Current hardcoded strings include Capytan image label and flag card labels. Related to US-005 but marked out-of-scope for T-001 by Human Gatekeeper.
+
+- **I-026** Rename 'greeting' Field to 'expression' for Greater Variety
+  - **source:** Human Gatekeeper
+  - **date:** 2025-11-01
+  - **priority:** 3
+  - **notes:** Modify the country data model to rename the 'greeting' field to 'expression' to support more varied cultural expressions. Current implementation would result in "Hola!" appearing for all 36 Spanish-speaking countries. The 'expression' field would allow for country-specific phrases, idioms, or local variations that better represent each nation's unique culture while still maintaining the educational goal of teaching greetings and common expressions.
+
+- **I-027** Add Open Source Footer with Contribution Link
+  - **source:** Human Gatekeeper
+  - **date:** 2025-11-01
+  - **priority:** 5
+  - **notes:** Add a footer component to the application stating this is an open source project and welcoming community contributions. Include link to GitHub repository (https://github.com/zosorock/worldspinner). This promotes community engagement and transparency about the project's open source nature. Footer should be subtle and non-intrusive while clearly communicating the collaborative spirit of the project.
+
+- **I-028** Refactor Country Card Data Storage for Scalability
+  - **source:** Human Gatekeeper
+  - **date:** 2025-11-01
+  - **priority:** 2
+  - **notes:** As the country database expands, the countryCards.js file will become large and difficult to maintain. Need a scalable solution for storing and translating country card data. Consider options like: splitting into individual JSON files per country, using a database, implementing lazy loading/code splitting, or organizing data by continent. The solution should support efficient loading, easy translation workflows, and maintainable file sizes while preserving the existing data structure and internationalization requirements.

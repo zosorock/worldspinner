@@ -54,7 +54,7 @@ WorldSpinner/
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js (v22 or higher)
 - npm or yarn
 
 ### Installation
