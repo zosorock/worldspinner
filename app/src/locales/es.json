@@ -2,6 +2,7 @@
   "_comment": "Traducciones en español para la interfaz de World Spinner. Este archivo contiene todas las cadenas visibles para el usuario de la aplicación.",
   "capytan": {
     "label": "Capytan",
+    "ariaLabel": "Capytan el carpincho",
     "tip1": "Gira el globo para conocer un país misterioso.",
     "tip2": "Usa la siguiente pista si la primera parece difícil.",
     "tip3": "¡Las respuestas correctas ganan una nueva tarjeta de descubrimiento!"
@@ -30,5 +31,8 @@
   "form": {
     "guessLabel": "Adivina el País",
     "guessPlaceholder": "Escribe tu mejor respuesta..."
+  },
+  "ariaLabels": {
+    "countryFlag": "bandera de {country}"
   }
 }

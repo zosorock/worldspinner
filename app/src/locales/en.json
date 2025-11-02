@@ -2,6 +2,7 @@
   "_comment": "English translations for World Spinner UI. This file contains all user-facing strings for the application.",
   "capytan": {
     "label": "Capytan",
+    "ariaLabel": "Capytan the capybara",
     "tip1": "Spin the globe to meet a mystery country.",
     "tip2": "Use the next clue if the first one feels tricky.",
     "tip3": "Correct guesses earn a new discovery card!"
@@ -30,5 +31,8 @@
   "form": {
     "guessLabel": "Guess the Country",
     "guessPlaceholder": "Type your best guess..."
+  },
+  "ariaLabels": {
+    "countryFlag": "{country} flag"
   }
 }
