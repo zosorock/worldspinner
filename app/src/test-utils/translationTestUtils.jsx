@@ -39,7 +39,7 @@ export const renderWithTranslation = (ui, options = {}) => {
   Wrapper.propTypes = {
     children: PropTypes.node.isRequired,
   };
-  return render(ui, { wrapper: Wrapper, ...options });
+  return render(ui, { ...options, wrapper: Wrapper });
 };
 
 /**
