@@ -1,0 +1,33 @@
+{
+  "capytan": {
+    "label": "Capytan",
+    "tip1": "Spin the globe to meet a mystery country.",
+    "tip2": "Use the next clue if the first one feels tricky.",
+    "tip3": "Correct guesses earn a new discovery card!"
+  },
+  "buttons": {
+    "spinGlobe": "🎡 Spin the Globe",
+    "nextClue": "🔍 Next Clue",
+    "submitGuess": "✍️ Submit Guess"
+  },
+  "clueBoard": {
+    "header": "Clue Board",
+    "emptyState": "Spin the globe to get your first animal clue.",
+    "clueCounter": "{current}/{total}"
+  },
+  "feedback": {
+    "correct": "Yes! You discovered {country}. Spin again for a new mystery.",
+    "incorrect": "Not quite. Peek at another clue and try again.",
+    "emptyGuess": "Type a country name before guessing.",
+    "noActiveCountry": "Spin the globe to start your adventure."
+  },
+  "discoveryLog": {
+    "header": "Discovery Log",
+    "emptyState": "No cards yet. Spin the globe and follow the clues to unlock your first country.",
+    "counter": "{discovered}/{total}"
+  },
+  "form": {
+    "guessLabel": "Guess the Country",
+    "guessPlaceholder": "Type your best guess..."
+  }
+}

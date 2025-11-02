@@ -1,0 +1,33 @@
+{
+  "capytan": {
+    "label": "Capytan",
+    "tip1": "Gira el globo para conocer un país misterioso.",
+    "tip2": "Usa la siguiente pista si la primera parece difícil.",
+    "tip3": "¡Las respuestas correctas ganan una nueva tarjeta de descubrimiento!"
+  },
+  "buttons": {
+    "spinGlobe": "🎡 Girar el Globo",
+    "nextClue": "🔍 Siguiente Pista",
+    "submitGuess": "✍️ Enviar Respuesta"
+  },
+  "clueBoard": {
+    "header": "Tablero de Pistas",
+    "emptyState": "Gira el globo para obtener tu primera pista animal.",
+    "clueCounter": "{current}/{total}"
+  },
+  "feedback": {
+    "correct": "¡Sí! Descubriste {country}. Gira de nuevo para un nuevo misterio.",
+    "incorrect": "No exactamente. Mira otra pista e intenta de nuevo.",
+    "emptyGuess": "Escribe el nombre de un país antes de adivinar.",
+    "noActiveCountry": "Gira el globo para comenzar tu aventura."
+  },
+  "discoveryLog": {
+    "header": "Registro de Descubrimientos",
+    "emptyState": "Aún no hay tarjetas. Gira el globo y sigue las pistas para desbloquear tu primer país.",
+    "counter": "{discovered}/{total}"
+  },
+  "form": {
+    "guessLabel": "Adivina el País",
+    "guessPlaceholder": "Escribe tu mejor respuesta..."
+  }
+}

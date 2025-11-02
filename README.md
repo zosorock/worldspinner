@@ -93,9 +93,21 @@ npm run build  # Outputs to app/dist/
 
 We welcome contributions, especially translations! World Spinner is designed to be easily translatable so children around the world can learn geography in their native language.
 
-### Translation Support (Coming in v0.2.0)
+### Translation Support
 
-We're building internationalization infrastructure to support community translations. If you'd like to help translate the game into your language, check [Ideas.md](./Ideas.md) for i18n plans.
+Translation infrastructure is now in place! The game includes:
+- `app/src/locales/` directory with translation JSON files
+- English (`en.json`) and Spanish (`es.json`) translations
+- Structured format (max 2 levels deep) for easy maintenance
+- `_README.json` with guidelines for adding new languages
+
+To add a new language:
+1. Copy `app/src/locales/en.json` to `<language-code>.json` (e.g., `fr.json` for French)
+2. Translate the values while keeping keys in English
+3. Run `npm test` to verify structure matches
+4. Submit a pull request
+
+See `app/src/locales/_README.json` for detailed guidelines.
 
 ### Development Workflow
 
