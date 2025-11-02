@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- **T-004d (3bdd085): ESLint Errors in locales.test.js** - Resolved 7 ESLint errors in T-001's test file to achieve zero-error lint status (DoD requirement). Refactored `extractLeafKeys()` function from `for...of` loop to `.reduce()` pattern (fixes no-restricted-syntax violation, following T-002 precedent lines 109-115). Renamed `_comment` variable references to `commentField` with bracket notation (fixes 6 no-underscore-dangle violations). All 104 tests still pass after refactoring (18/18 in locales.test.js), proving no behavioral changes. ESLint now reports 0 errors across entire codebase. Refactoring-only task, no functional changes.
+
 ### Changed
 - **T-004c (f3b666b): Wrap App in TranslationProvider** - Integrated TranslationProvider at application root to enable shared translation state across all components. Modified `app/src/index.jsx` to import TranslationProvider from `./contexts/TranslationContext` and wrap `<App />` component (maintaining `React.StrictMode` wrapper). This completes the architecture fix for T-002's isolated state defect—each component calling `useTranslation()` now receives shared state from the Provider instead of independent `useState` instances. Language changes now propagate correctly across all components (LanguageSwitcher, App, etc.). All 104 tests passing, build success (1.11s), no regressions. This enables functional language switching for US-005.
 
