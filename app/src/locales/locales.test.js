@@ -99,6 +99,18 @@ describe('T-001: Translation JSON Files Structure', () => {
       expect(readmeData.description).toBeDefined();
       expect(typeof readmeData.description).toBe('string');
     });
+
+    test('en.json has documentation comment', () => {
+      expect(enData._comment).toBeDefined();
+      expect(typeof enData._comment).toBe('string');
+      expect(enData._comment.length).toBeGreaterThan(0);
+    });
+
+    test('es.json has documentation comment', () => {
+      expect(esData._comment).toBeDefined();
+      expect(typeof esData._comment).toBe('string');
+      expect(esData._comment.length).toBeGreaterThan(0);
+    });
   });
 
   describe('JSON Structure Validation', () => {
