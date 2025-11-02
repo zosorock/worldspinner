@@ -14,6 +14,7 @@ import React from 'react';
 import { renderHook, render, act } from '@testing-library/react';
 import useTranslation from './useTranslation';
 import { TranslationProvider } from '../contexts/TranslationContext';
+import { createTranslationWrapper } from '../test-utils/translationTestUtils';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -36,7 +37,7 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Test wrapper component that provides TranslationContext
-const wrapper = ({ children }) => <TranslationProvider>{children}</TranslationProvider>;
+const wrapper = createTranslationWrapper();
 
 describe('T-004b: useTranslation Hook (Context Consumer)', () => {
   beforeEach(() => {
