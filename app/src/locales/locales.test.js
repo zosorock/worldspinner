@@ -27,31 +27,25 @@ const isMaxTwoLevelsDeep = (obj, currentLevel = 1) => {
 
   if (currentLevel >= 2) {
     // At level 2, all values must be primitives (strings, numbers, etc.)
-    return Object.values(obj).every(value => typeof value !== 'object' || value === null);
+    return Object.values(obj).every((value) => typeof value !== 'object' || value === null);
   }
 
   // Check nested objects
-  return Object.values(obj).every(value => isMaxTwoLevelsDeep(value, currentLevel + 1));
+  return Object.values(obj).every((value) => isMaxTwoLevelsDeep(value, currentLevel + 1));
 };
 
 /**
  * Recursively extract all leaf keys from nested object
  */
-const extractLeafKeys = (obj, prefix = '') => {
-  const keys = [];
-
-  for (const [key, value] of Object.entries(obj)) {
+const extractLeafKeys = (obj, prefix = '') =>
+  Object.entries(obj).reduce((keys, [key, value]) => {
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      keys.push(...extractLeafKeys(value, fullKey));
-    } else {
-      keys.push(fullKey);
+      return [...keys, ...extractLeafKeys(value, fullKey)];
     }
-  }
-
-  return keys;
-};
+    return [...keys, fullKey];
+  }, []);
 
 describe('T-001: Translation JSON Files Structure', () => {
   describe('Directory and File Existence', () => {
@@ -101,15 +95,17 @@ describe('T-001: Translation JSON Files Structure', () => {
     });
 
     test('en.json has documentation comment', () => {
-      expect(enData._comment).toBeDefined();
-      expect(typeof enData._comment).toBe('string');
-      expect(enData._comment.length).toBeGreaterThan(0);
+      const commentField = '_comment';
+      expect(enData[commentField]).toBeDefined();
+      expect(typeof enData[commentField]).toBe('string');
+      expect(enData[commentField].length).toBeGreaterThan(0);
     });
 
     test('es.json has documentation comment', () => {
-      expect(esData._comment).toBeDefined();
-      expect(typeof esData._comment).toBe('string');
-      expect(esData._comment.length).toBeGreaterThan(0);
+      const commentField = '_comment';
+      expect(esData[commentField]).toBeDefined();
+      expect(typeof esData[commentField]).toBe('string');
+      expect(esData[commentField].length).toBeGreaterThan(0);
     });
   });
 
