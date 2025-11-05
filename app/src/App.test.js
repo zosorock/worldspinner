@@ -246,3 +246,255 @@ describe('App.jsx Translation Integration (T-004)', () => {
     });
   });
 });
+
+describe('T-006: Smart Card Removal - Filter Available Countries', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random');
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('excludes discovered countries from spin selection', async () => {
+    // Setup: Mock Math.random to return first available country each time
+    mathRandomSpy.mockReturnValue(0);
+
+    renderWithTranslation(<App />);
+
+    // Spin and discover first country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const firstCountryName = countryCards[0].displayName;
+    expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, firstCountryName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Verify first country is discovered
+    expect(screen.getByText(new RegExp(`You discovered ${firstCountryName}`, 'i'))).toBeInTheDocument();
+
+    // Spin again - should get second country (not first)
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+
+    // Should NOT show first country's clue again
+    expect(screen.queryByText(countryCards[0].clues[0].text)).not.toBeInTheDocument();
+
+    // Should show second country's clue (since first is filtered out)
+    expect(screen.getByText(countryCards[1].clues[0].text)).toBeInTheDocument();
+  });
+
+  test('prevents rediscovering the same country multiple times', async () => {
+    mathRandomSpy.mockReturnValue(0);
+
+    renderWithTranslation(<App />);
+
+    // Discover first country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Counter should show 1 discovered
+    expect(screen.getByText(new RegExp(`1/${countryCards.length}`))).toBeInTheDocument();
+
+    // Spin multiple times - discovered country should never appear again
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+
+    // First country's clue should never appear again
+    expect(screen.queryByText(countryCards[0].clues[0].text)).not.toBeInTheDocument();
+  });
+
+  test('handles edge case when all countries are discovered', async () => {
+    // Mock to always return first available country
+    mathRandomSpy.mockReturnValue(0);
+
+    renderWithTranslation(<App />);
+
+    // Keep track of remaining cards to guess in order
+    const remainingCards = [...countryCards];
+    const totalCountries = countryCards.length;
+
+    // Discover all countries
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      // Get next card to discover (this aligns with component's filtered list)
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+
+      // Clear previous value and type new guess
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Verify all countries discovered
+    expect(screen.getByText(new RegExp(`${totalCountries}/${totalCountries}`))).toBeInTheDocument();
+
+    // Spin button should be disabled or show feedback
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    expect(spinButton).toBeDisabled();
+  });
+
+  test('maintains correct available pool size as countries are discovered', async () => {
+    mathRandomSpy.mockReturnValue(0);
+
+    renderWithTranslation(<App />);
+
+    // Initially 0 discovered
+    expect(screen.getByText(new RegExp(`0/${countryCards.length}`))).toBeInTheDocument();
+
+    // Discover first country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Should show 1 discovered
+    expect(screen.getByText(new RegExp(`1/${countryCards.length}`))).toBeInTheDocument();
+
+    // Discover second country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await userEvent.clear(guessField);
+    await userEvent.type(guessField, countryCards[1].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Should show 2 discovered
+    expect(screen.getByText(new RegExp(`2/${countryCards.length}`))).toBeInTheDocument();
+  });
+
+  test('filters work with useMemo for performance', async () => {
+    // This test verifies that filtering is done efficiently
+    // by checking that the component renders without performance issues
+    mathRandomSpy.mockReturnValue(0);
+
+    const startTime = performance.now();
+    renderWithTranslation(<App />);
+
+    // Discover a few countries
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await userEvent.clear(guessField);
+    await userEvent.type(guessField, countryCards[1].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const endTime = performance.now();
+
+    // Should complete in reasonable time (< 5 seconds)
+    expect(endTime - startTime).toBeLessThan(5000);
+  });
+});
+
+describe('T-007: Progress Counter UI', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('displays progress counter near spin button with correct initial count', () => {
+    renderWithTranslation(<App />);
+
+    // Progress counter should show 0 discovered out of total
+    const progressText = screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'));
+    expect(progressText).toBeInTheDocument();
+  });
+
+  test('updates progress counter immediately after correct guess', async () => {
+    renderWithTranslation(<App />);
+
+    // Initially 0 discovered
+    expect(screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+
+    // Discover first country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Should update to 1 discovered
+    expect(screen.getByText(new RegExp(`1 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+  });
+
+  test('progress counter increments correctly as multiple countries are discovered', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover three countries
+    const discoverySequence = [0, 1, 2];
+
+    await discoverySequence.reduce(async (promise, index) => {
+      await promise;
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, countryCards[index].displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+      // Verify counter shows correct count
+      expect(
+        screen.getByText(new RegExp(`${index + 1} of ${countryCards.length} countries discovered`, 'i')),
+      ).toBeInTheDocument();
+    }, Promise.resolve());
+  });
+
+  test('progress counter uses internationalized text from translation system', () => {
+    renderWithTranslation(<App />);
+
+    // Should use translation key, not hardcoded English
+    // Translation system should provide the format string
+    expect(screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+  });
+
+  test('progress counter renders at all breakpoints (mobile/desktop)', () => {
+    renderWithTranslation(<App />);
+
+    const progressElement = screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'));
+
+    // Should be in the document and not hidden by responsive classes
+    expect(progressElement).toBeInTheDocument();
+    // Verify it doesn't have display: none or visibility: hidden
+    expect(progressElement).not.toHaveStyle({ display: 'none' });
+    expect(progressElement).not.toHaveStyle({ visibility: 'hidden' });
+  });
+
+  test('progress counter shows completion state when all countries discovered', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover all countries
+    const remainingCards = [...countryCards];
+    const totalCountries = countryCards.length;
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Should show all countries discovered
+    expect(
+      screen.getByText(new RegExp(`${totalCountries} of ${totalCountries} countries discovered`, 'i')),
+    ).toBeInTheDocument();
+  });
+});

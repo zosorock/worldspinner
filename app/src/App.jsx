@@ -91,8 +91,17 @@ const App = () => {
     [discoveredIds],
   );
 
+  const availableCountries = useMemo(
+    () => countryCards.filter((card) => !discoveredIds.includes(card.id)),
+    [discoveredIds],
+  );
+
   const spinGlobe = () => {
-    const nextCard = countryCards[Math.floor(Math.random() * countryCards.length)];
+    if (availableCountries.length === 0) {
+      return;
+    }
+
+    const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
     setActiveCountryId(nextCard.id);
     setClueIndex(0);
     setFeedback(null);
@@ -173,7 +182,8 @@ const App = () => {
           <button
             type="button"
             onClick={spinGlobe}
-            className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95"
+            disabled={availableCountries.length === 0}
+            className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {t('buttons.spinGlobe')}
           </button>
