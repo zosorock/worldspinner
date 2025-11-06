@@ -55,5 +55,11 @@
   "progress": {
     "_comment": "Progress tracking messages showing discovery count. {discovered} and {total} will be replaced with numbers.",
     "countriesDiscovered": "{discovered} of {total} countries discovered"
+  },
+  "completion": {
+    "_comment": "Messages shown when all countries have been discovered",
+    "congratulations": "🎉 Congratulations! You discovered all {total} countries!",
+    "message": "You are a true world explorer! Every mystery country has been unlocked.",
+    "resetButton": "🔄 Reset Progress"
   }
 }

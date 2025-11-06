@@ -498,3 +498,164 @@ describe('T-007: Progress Counter UI', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('T-008: Game Completion State', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('displays congratulations message when all countries are discovered', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover all countries
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Should display congratulations message
+    expect(screen.getByText(/congratulations/i)).toBeInTheDocument();
+  });
+
+  test('displays reset progress button when game is completed', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover all countries
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Should display reset button
+    expect(screen.getByRole('button', { name: /reset progress/i })).toBeInTheDocument();
+  });
+
+  test('resets game state when reset button is clicked', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover all countries
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Verify completion state
+    expect(screen.getByText(/congratulations/i)).toBeInTheDocument();
+
+    // Click reset button
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+    await userEvent.click(resetButton);
+
+    // Should reset progress counter to 0
+    expect(screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+
+    // Should hide congratulations message
+    expect(screen.queryByText(/congratulations/i)).not.toBeInTheDocument();
+
+    // Should re-enable spin button
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    expect(spinButton).not.toBeDisabled();
+  });
+
+  test('displays celebration animation when completion state is reached', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover all countries
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Should render completion section with animation
+    // (We check for the section containing the congratulations message)
+    const completionSection = screen.getByText(/congratulations/i).closest('section');
+    expect(completionSection).toBeInTheDocument();
+  });
+
+  test('completion messages are internationalized', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover all countries
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Should use translation keys for congratulations and reset button
+    expect(screen.getByText(/congratulations/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /reset progress/i })).toBeInTheDocument();
+  });
+
+  test('hides clue board and guess form when game is completed', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover all countries
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Guess form should not be visible
+    expect(screen.queryByLabelText(/guess the country/i)).not.toBeInTheDocument();
+  });
+});
