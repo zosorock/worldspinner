@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
 import countryCards from './data/countryCards';
@@ -79,6 +79,17 @@ const App = () => {
   const [feedback, setFeedback] = useState(null);
   const [tipIndex, setTipIndex] = useState(0);
   const [discoveredIds, setDiscoveredIds] = useState([]);
+  const [resetConfirmPending, setResetConfirmPending] = useState(false);
+  const resetTimeoutRef = useRef(null);
+
+  // Cleanup timer on unmount to prevent memory leaks and React act() warnings
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const capytanTips = [t('capytan.tip1'), t('capytan.tip2'), t('capytan.tip3')];
 
@@ -161,12 +172,34 @@ const App = () => {
   };
 
   const handleResetProgress = () => {
+    // Clear any pending timeout to prevent race conditions
+    if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current);
+      resetTimeoutRef.current = null;
+    }
     setDiscoveredIds([]);
     setActiveCountryId(null);
     setClueIndex(0);
     setGuess('');
     setFeedback(null);
     setTipIndex(0);
+    setResetConfirmPending(false);
+  };
+
+  const handleManualReset = () => {
+    if (resetConfirmPending) {
+      handleResetProgress();
+    } else {
+      // Clear any existing timeout before setting a new one
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+      setResetConfirmPending(true);
+      resetTimeoutRef.current = setTimeout(() => {
+        setResetConfirmPending(false);
+        resetTimeoutRef.current = null;
+      }, 3000);
+    }
   };
 
   return (
@@ -302,6 +335,15 @@ const App = () => {
               ))}
             </ul>
           )}
+          {discoveredCards.length > 0 && !isGameComplete ? (
+            <button
+              type="button"
+              onClick={handleManualReset}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 active:scale-95"
+            >
+              {resetConfirmPending ? t('completion.resetButtonConfirm') : t('completion.resetButton')}
+            </button>
+          ) : null}
         </section>
       </motion.main>
     </div>

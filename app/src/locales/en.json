@@ -60,6 +60,7 @@
     "_comment": "Messages shown when all countries have been discovered",
     "congratulations": "🎉 Congratulations! You discovered all {total} countries!",
     "message": "You are a true world explorer! Every mystery country has been unlocked.",
-    "resetButton": "🔄 Reset Progress"
+    "resetButton": "🔄 Reset Progress",
+    "resetButtonConfirm": "⚠️ Reset Progress?"
   }
 }

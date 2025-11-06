@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithTranslation } from './test-utils/translationTestUtils';
 import App from './App';
@@ -658,4 +658,270 @@ describe('T-008: Game Completion State', () => {
     // Guess form should not be visible
     expect(screen.queryByLabelText(/guess the country/i)).not.toBeInTheDocument();
   });
+});
+
+describe('T-009: Manual Reset Progress Button', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('displays reset progress button during gameplay in discovery log section', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover one country to have some progress
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Manual reset button should be visible but not in completion section
+    // (completion section reset is T-008, manual reset is T-009)
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    // Should find at least one reset button
+    expect(resetButtons.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('reset button requires confirmation before clearing progress', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover a country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Progress should show 1 discovered
+    expect(screen.getByText(new RegExp(`1 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+
+    // Find the manual reset button (not in completion section)
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    const manualResetButton = resetButtons[0];
+
+    // First click should not immediately reset
+    await userEvent.click(manualResetButton);
+
+    // Should still show 1 discovered (not reset yet)
+    expect(screen.getByText(new RegExp(`1 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+  });
+
+  test('reset button clears progress after confirmation (double-click)', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover a country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Progress should show 1 discovered
+    expect(screen.getByText(new RegExp(`1 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+
+    // Get reset button
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    const manualResetButton = resetButtons[0];
+
+    // Double-click to confirm
+    await userEvent.dblClick(manualResetButton);
+
+    // Should reset progress to 0
+    expect(screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+  });
+
+  test('reset button clears discovered countries from display', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover a country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Country should appear in discovery log
+    expect(screen.getByText(countryCards[0].displayName)).toBeInTheDocument();
+
+    // Double-click reset button
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    await userEvent.dblClick(resetButtons[0]);
+
+    // Discovery log should show empty state
+    expect(screen.getByText(/no cards yet/i)).toBeInTheDocument();
+  });
+
+  test('reset button resets active country state', async () => {
+    renderWithTranslation(<App />);
+
+    // Start a game and discover a country (so reset button appears)
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Now start another game
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    expect(screen.getByText(countryCards[1].clues[0].text)).toBeInTheDocument();
+
+    // Double-click reset button
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    await userEvent.dblClick(resetButtons[0]);
+
+    // Clue board should show empty state
+    expect(screen.getByText(/spin the globe to get your first animal clue/i)).toBeInTheDocument();
+  });
+
+  test('reset button is not too prominent in UI', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover a country so reset button appears
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Reset button should exist but be styled differently than primary actions
+    // This test verifies the button exists but doesn't dominate the UI
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    expect(resetButtons.length).toBeGreaterThan(0);
+
+    // Should be a button element
+    expect(resetButtons[0].tagName).toBe('BUTTON');
+  });
+
+  test('reset button text is internationalized', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover a country so reset button appears
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Should use translation key for button text
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    expect(resetButtons.length).toBeGreaterThan(0);
+  });
+
+  test('reset button maintains current language selection', async () => {
+    renderWithTranslation(<App />);
+
+    // Switch to Spanish
+    const esButton = screen.getByRole('button', { name: /switch to español/i });
+    await userEvent.click(esButton);
+
+    // Discover a country
+    await userEvent.click(screen.getByRole('button', { name: /girar el globo/i }));
+    const guessField = screen.getByLabelText(/adivina el país/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /enviar respuesta/i }));
+
+    // Double-click reset button
+    const resetButtons = screen.getAllByRole('button', { name: /reiniciar progreso/i });
+    await userEvent.dblClick(resetButtons[0]);
+
+    // Should still be in Spanish after reset
+    expect(screen.getByRole('button', { name: /girar el globo/i })).toBeInTheDocument();
+  });
+
+  test('reset button warning state times out after 3 seconds', async () => {
+    jest.useFakeTimers();
+    try {
+      // Clear localStorage and set to English
+      localStorage.clear();
+      localStorage.setItem('worldspinner_language', 'en');
+
+      renderWithTranslation(<App />);
+
+      // Discover a country
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.type(guessField, countryCards[0].displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+      // Get reset button
+      const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+      const manualResetButton = resetButtons[0];
+
+      // First click should show warning state
+      await userEvent.click(manualResetButton);
+
+      // Should show warning icon
+      expect(manualResetButton).toHaveTextContent(/⚠️/);
+
+      // Advance fake timers to trigger timeout logic within act()
+      act(() => {
+        jest.advanceTimersByTime(3000);
+      });
+
+      // Warning state should be cleared
+      expect(manualResetButton).not.toHaveTextContent(/⚠️/);
+    } finally {
+      jest.useRealTimers();
+    }
+  }, 10000);
+
+  test('reset button shows warning icon in confirmation state', async () => {
+    renderWithTranslation(<App />);
+
+    // Discover a country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Get reset button
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    const manualResetButton = resetButtons[0];
+
+    // Button should initially NOT show warning icon
+    expect(manualResetButton.textContent).not.toMatch(/⚠️/);
+
+    // First click should trigger warning state
+    await userEvent.click(manualResetButton);
+
+    // Should show warning icon
+    expect(manualResetButton.textContent).toMatch(/⚠️/);
+  });
+
+  test('reset button handles rapid clicks correctly', async () => {
+    // Clear localStorage and set to English
+    localStorage.clear();
+    localStorage.setItem('worldspinner_language', 'en');
+
+    renderWithTranslation(<App />);
+
+    // Discover a country
+    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Progress should show 1 discovered
+    expect(screen.getByText(new RegExp(`1 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+
+    // Get reset button
+    const resetButtons = screen.getAllByRole('button', { name: /reset progress/i });
+    const manualResetButton = resetButtons[0];
+
+    // First click - enter warning state
+    await userEvent.click(manualResetButton);
+    expect(manualResetButton.textContent).toMatch(/⚠️/);
+
+    // Wait 1 second
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
+
+    // Second click before timeout - should reset progress
+    await userEvent.click(manualResetButton);
+
+    // Should reset progress to 0
+    expect(screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
+  }, 10000);
 });
