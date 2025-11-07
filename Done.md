@@ -74,6 +74,24 @@ Simple internationalization structure for adding new languages easily.
 
 ---
 
+### US-007: Smart Card Removal from Shuffle Deck
+**Status**: Done | **Priority**: Medium
+**Details**: [docs/user-stories/US-007-smart-card-removal.md](docs/user-stories/US-007-smart-card-removal.md)
+
+Each country appears only once per game session to improve discovery flow and prevent repetition frustration.
+
+**Implementation Tasks**: T-006, T-007, T-008, T-009 (all completed)
+
+**Completion Summary**: All 4 tasks completed successfully with comprehensive testing coverage (≥97.87% across all tasks). Smart card removal filters countries from shuffle deck, progress counter displays discovery status, game completion state celebrates full discovery, and manual reset button provides player control.
+
+**Approved By**: Human Gatekeeper
+**Approved At**: 2025-11-05T21:30:00Z
+**Completed At**: 2025-11-05T21:30:00Z
+
+**Completed**: v0.3.0
+
+---
+
 ## Completed Implementation Tasks
 
 ### T-005: Add i18n Documentation for Contributors
@@ -224,3 +242,92 @@ Create test helper utilities to wrap components with TranslationProvider and upd
 **Review Notes**: Code Reviewer APPROVED - All quality gates passed. Tests 104/104 passing, coverage 100% on utilities, lint clean. Fixed wrapper override bug. CHANGELOG updated.
 
 **Completed**: v0.2.0
+
+---
+
+### T-006: Filter Available Countries and Update Spin Logic
+**Status**: Done | **Parent Story**: US-007 | **Priority**: Critical
+**Started**: 2025-11-05T09:15:00 | **Completed**: 2025-11-05T21:30:00Z
+**Commit**: 65aa19c442ede3028949eb8d70cde30ac91d99b0
+
+Modify the spin globe functionality to exclude already-discovered countries from the random selection pool, ensuring each country appears only once per game session.
+
+**Implementation Summary**:
+- Filtered countryCards array to exclude discoveredIds before random selection
+- Handled edge case when all countries are discovered
+- Maintained existing state management patterns
+- Used array methods compliant with ESLint Airbnb config (no for...of loops)
+
+**Review Notes**: Code Reviewer APPROVED - All quality gates passed. Tests passing, build success, lint clean, DoD compliance verified.
+
+**Completion Notes**: Approved by HG - Core smart card removal functionality enables progression through country deck without repetition.
+
+**Completed**: v0.3.0
+
+---
+
+### T-007: Add Progress Counter UI
+**Status**: Done | **Parent Story**: US-007 | **Priority**: High
+**Started**: 2025-11-05T18:26:55 | **Completed**: 2025-11-05T21:30:00Z
+**Verification Task**: Existing implementation at App.jsx:184 verified
+
+Add visual progress counter showing "X of Y countries discovered" near the spin button to give players clear feedback on their completion progress.
+
+**Implementation Summary**:
+- Verification task - existing implementation meets all acceptance criteria
+- Implementation found at App.jsx:184
+- Translation key: progress.countriesDiscovered
+- Format: "{discovered} of {total} countries discovered"
+- Tests: 98.12% coverage
+
+**Review Notes**: Code Reviewer APPROVED - Build/Tests/Lint PASS, Coverage 98.12%, all acceptance criteria met.
+
+**Completion Notes**: Approved by HG - Progress counter provides clear player feedback on discovery status.
+
+**Completed**: v0.3.0
+
+---
+
+### T-008: Implement Game Completion State
+**Status**: Done | **Parent Story**: US-007 | **Priority**: High
+**Started**: 2025-11-05T19:30:00 | **Completed**: 2025-11-05T21:30:00Z
+**Commits**: 6d80dc8 (implementation), 3d6f3b3 (CHANGELOG fix)
+**Retry Count**: 3/3 - SUCCESS
+
+Handle the state when all countries have been discovered, displaying congratulations message and offering reset option.
+
+**Implementation Summary**:
+- Detects when discoveredIds.length === countryCards.length
+- Displays congratulatory message with celebration animation using Framer Motion
+- Provides "Start New Game" button to reset progress
+- Clears discoveredIds and resets related state on reset action
+- All text properly internationalized
+
+**Review Notes**: Code Reviewer APPROVED - Tests 121 passing, 98.22% coverage, Build/Lint PASS, DoD fully satisfied (10/10 criteria), all acceptance criteria met.
+
+**Completion Notes**: Approved by HG - Game completion state provides satisfying closure and clear next steps for players.
+
+**Completed**: v0.3.0
+
+---
+
+### T-009: Add Manual Reset Progress Button
+**Status**: Done | **Parent Story**: US-007 | **Priority**: Low
+**Started**: 2025-11-05T20:16:00 | **Completed**: 2025-11-05T21:30:00Z
+**Commit**: 7913d0d
+
+Add a discrete "Reset Progress" button that allows players to manually clear their discovered countries and start fresh at any time.
+
+**Implementation Summary**:
+- Added reset button in appropriate UI location (not too prominent)
+- Confirmation mechanism prevents accidental resets
+- Clears discoveredIds array and resets active country state
+- Maintains current language selection (doesn't reset preferences)
+- Uses existing button styling patterns with reset icon
+- All text properly internationalized
+
+**Review Notes**: Code Reviewer APPROVED - Tests 132 passing, 97.87% coverage, Build/Lint PASS (0 errors), DoD fully satisfied (10/10 criteria), all 8 acceptance criteria met, React act() warnings resolved, Codex confirms production-ready.
+
+**Completion Notes**: Approved by HG - Manual reset button provides player control and flexibility to restart discovery journey at any time.
+
+**Completed**: v0.3.0

@@ -84,7 +84,8 @@ Clean, playful visual design optimized for the 7-12 age range, working seamlessl
 - **Deployment**: Static site deployment (no backend required for Day 1)
 
 ## Traceability & Governance
-- Day 1 MVP user stories tracked in Backlog.md (US-001 through US-006)
+- Completed user stories tracked in Done.md (US-001 through US-007)
+- Active development tracked in Backlog.md
 - Future enhancements cataloged in Ideas.md (I-001 through I-024)
 - Product vision and feature definitions maintained in this document (AppSpec.md)
 - All implementation must adhere to DoD.md, GuardRails.md, RACI.md, and Evals.md
