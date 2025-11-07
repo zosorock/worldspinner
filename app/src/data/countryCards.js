@@ -213,11 +213,11 @@ const countryCards = [
   {
     id: 'china',
     name: 'China',
-    displayName: 'People\'s Republic of China',
+    displayName: "People's Republic of China",
     emoji: '🐼',
     continent: 'Asia',
     flag: '🇨🇳',
-    aliases: ['people\'s republic of china', 'zhongguo'],
+    aliases: ["people's republic of china", 'zhongguo'],
     clues: [
       {
         label: 'Animal Clue',
@@ -236,8 +236,9 @@ const countryCards = [
       animalFact: 'Giant pandas have black and white fur that helps them hide in snowy bamboo forests.',
       greeting: '"Nǐ hǎo!" (你好) is how you say "hello" in Mandarin.',
       fossil: '🦕 The long-necked Mamenchisaurus dinosaur roamed what is now China millions of years ago.',
-      history: '🏺 Builders created the Great Wall to guard ancient treasures, and inventors made fireworks for celebrations.',
-      space: '🪐 Astronauts live on China\'s Tiangong space station, growing plants in space.',
+      history:
+        '🏺 Builders created the Great Wall to guard ancient treasures, and inventors made fireworks for celebrations.',
+      space: "🪐 Astronauts live on China's Tiangong space station, growing plants in space.",
     },
   },
   {
@@ -267,7 +268,7 @@ const countryCards = [
       greeting: '"Namaste!" (नमस्ते) is a respectful greeting with palms pressed together.',
       fossil: '🦕 The Rajasaurus, a fierce dinosaur with a horn, was discovered in Gujarat.',
       history: '🏺 Ancient palaces like the Taj Mahal were built with white marble and colorful stories.',
-      space: '🪐 India\'s Chandrayaan missions explore the Moon\'s craters and dusty surface.',
+      space: "🪐 India's Chandrayaan missions explore the Moon's craters and dusty surface.",
     },
   },
   {
@@ -355,7 +356,7 @@ const countryCards = [
     discovery: {
       animalFact: 'Iberian lynx kittens play in hidden dens among Mediterranean shrubs.',
       greeting: '"Olá!" is a warm hello in this seaside country.',
-      fossil: '🦕 The huge Lourinhanosaurus fossils were dug up near Lisbon\'s coast.',
+      fossil: "🦕 The huge Lourinhanosaurus fossils were dug up near Lisbon's coast.",
       history: '🏺 Brave explorers like Vasco da Gama sailed to discover new lands and spices.',
       space: '🪐 Portugal helps build satellites for monitoring oceans from space.',
     },
@@ -385,9 +386,9 @@ const countryCards = [
     discovery: {
       animalFact: 'Flamingos wade in pink flocks through the wetlands of Doñana National Park.',
       greeting: '"¡Hola!" means hello with a smile.',
-      fossil: '🦕 Dinosaur tracks from herds of sauropods are preserved in Rioja\'s rocks.',
+      fossil: "🦕 Dinosaur tracks from herds of sauropods are preserved in Rioja's rocks.",
       history: '🏺 Knights fought windmills in stories, and artists like Picasso painted colorful dreams.',
-      space: '🪐 Spain\'s Canary Islands host telescopes that watch for asteroids.',
+      space: "🪐 Spain's Canary Islands host telescopes that watch for asteroids.",
     },
   },
   {
@@ -415,9 +416,9 @@ const countryCards = [
     discovery: {
       animalFact: 'Brown bears hibernate in dens during long winters and fish for salmon in summer.',
       greeting: '"Hei!" is a simple hello in Finnish.',
-      fossil: '🦕 Ancient woolly mammoth bones have been found in Finland\'s icy soils.',
+      fossil: "🦕 Ancient woolly mammoth bones have been found in Finland's icy soils.",
       history: '🏺 Vikings settled here, telling stories of gods and heroes around fires.',
-      space: '🪐 Finland builds instruments for satellites that study Earth\'s northern lights.',
+      space: "🪐 Finland builds instruments for satellites that study Earth's northern lights.",
     },
   },
   {
@@ -475,9 +476,9 @@ const countryCards = [
     discovery: {
       animalFact: 'Arctic foxes change fur colors with the seasons to hide in snow or rocks.',
       greeting: '"Halló!" sounds like hello in this land of elves and sagas.',
-      fossil: '🦕 Fossils of ancient whales are hidden in Iceland\'s volcanic rocks.',
+      fossil: "🦕 Fossils of ancient whales are hidden in Iceland's volcanic rocks.",
       history: '🏺 Vikings settled here, telling stories of gods and heroes around fires.',
-      space: '🪐 Iceland\'s glaciers help train astronauts for Moon walks.',
+      space: "🪐 Iceland's glaciers help train astronauts for Moon walks.",
     },
   },
   {
@@ -653,9 +654,9 @@ const countryCards = [
       },
     ],
     discovery: {
-      animalFact: 'Highland cows with shaggy fur graze in Scotland\'s misty hills.',
+      animalFact: "Highland cows with shaggy fur graze in Scotland's misty hills.",
       greeting: '"Hello!" or "Cheers!" for a friendly hi.',
-      fossil: '🦕 Mary Anning found ichthyosaur fossils on England\'s Jurassic Coast.',
+      fossil: "🦕 Mary Anning found ichthyosaur fossils on England's Jurassic Coast.",
       history: '🏺 Kings and queens ruled from castles, and Shakespeare wrote plays in London.',
       space: '🪐 UK satellites help predict weather from space.',
     },
@@ -717,7 +718,7 @@ const countryCards = [
       greeting: '"¡Hola!" in Spanish, or "Allillanchu!" in Quechua.',
       fossil: '🦕 Giant penguin fossils from 36 million years ago were found on the coast.',
       history: '🏺 Incas built Machu Picchu high in the mountains as a secret city.',
-      space: '🪐 Peru\'s Chasqui-1 satellite takes pictures of Earth from space.',
+      space: "🪐 Peru's Chasqui-1 satellite takes pictures of Earth from space.",
     },
   },
   {
@@ -775,9 +776,10 @@ const countryCards = [
     discovery: {
       animalFact: 'Giant otters splash in rivers, catching fish with their families.',
       greeting: '"Hello!" in English, the official language.',
-      fossil: '🦕 Ancient sloth fossils have been found in Guyana\'s soils.',
+      fossil: "🦕 Ancient sloth fossils have been found in Guyana's soils.",
       history: '🏺 Indigenous Arawak people fished and farmed along the coasts.',
-      space: '🪐 Guyana’s Space Research Unit develops satellites to monitor deforestation and climate change from orbit.',
+      space:
+        '🪐 Guyana’s Space Research Unit develops satellites to monitor deforestation and climate change from orbit.',
     },
   },
   {
@@ -833,7 +835,7 @@ const countryCards = [
       },
     ],
     discovery: {
-      animalFact: 'Capybaras, the world\'s largest rodents, relax by rivers.',
+      animalFact: "Capybaras, the world's largest rodents, relax by rivers.",
       greeting: '"¡Hola!" in Spanish.',
       fossil: '🦕 Tacuaremboensis dinosaurs roamed ancient landscapes.',
       history: '🏺 Gauchos herded cattle on vast ranches.',
@@ -865,7 +867,7 @@ const countryCards = [
     discovery: {
       animalFact: 'White storks build big nests on rooftops and migrate long distances.',
       greeting: '"Pryvit!" (Привіт) means hello in Ukrainian.',
-      fossil: '🦕 Woolly mammoth bones are found in Ukraine\'s ancient soils.',
+      fossil: "🦕 Woolly mammoth bones are found in Ukraine's ancient soils.",
       history: '🏺 Cossack warriors rode horses and danced in colorful clothes.',
       space: '🪐 Ukraine builds rocket engines that help launch satellites.',
     },
@@ -899,7 +901,7 @@ const countryCards = [
       history: '🏺 Bedouin nomads told stories around campfires in the dunes.',
       space: '🪐 Saudi satellites help with mapping and communication from orbit.',
     },
-  }
+  },
 ];
 
 export default countryCards;

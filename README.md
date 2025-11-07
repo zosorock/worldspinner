@@ -14,7 +14,7 @@ World Spinner is an interactive browser game designed for children aged 7-12. Pl
 
 The game uses intellectually stimulating language without oversimplification, encouraging curiosity and deeper learning through exploration.
 
-## ✨ Features (v0.2.0)
+## ✨ Features (v0.3.0)
 
 - 🎡 **Spin the Globe**: Random country selection with smooth animations
 - 🕵️ **Progressive Clues**: Three hints per country (animal, food, flag)
@@ -22,9 +22,13 @@ The game uses intellectually stimulating language without oversimplification, en
 - 🎉 **Discovery Cards**: Educational facts about each unlocked country
 - 📱 **Responsive Design**: Works seamlessly on phones, tablets, and laptops
 - 🎨 **Polished UI**: Teal color theme with Framer Motion animations
-- 🌐 **Internationalization (NEW)**: Full English and Spanish language support with easy-to-use language switcher
-- 🔄 **Language Persistence (NEW)**: Your language preference is saved between sessions
-- 👥 **Translation-Ready (NEW)**: Community-friendly structure for adding new languages
+- 🌐 **Internationalization**: Full English and Spanish language support with easy-to-use language switcher
+- 🔄 **Language Persistence**: Your language preference is saved between sessions
+- 👥 **Translation-Ready**: Community-friendly structure for adding new languages
+- 🎯 **Smart Card Removal (NEW)**: Each country appears only once per session—no repetitive discoveries!
+- 📊 **Progress Tracking (NEW)**: See how many countries you've discovered with a live counter
+- 🏆 **Game Completion (NEW)**: Celebrate with an animated congratulations screen when you've found all countries
+- 🔄 **Manual Reset (NEW)**: Start fresh anytime with the reset button—no need to finish the game first
 ## 🛠️ Tech Stack
 
 - **Frontend**: React (JavaScript)
@@ -282,12 +286,14 @@ Not sure about something? Open an issue on GitHub with the "translation" label a
 
 ## 🗺️ Roadmap
 
-### v0.2.0 (Planned)
+### What's Next
 - 🦫 **Capytan the Capybara**: Friendly game host character
-- 🌐 **Internationalization**: Translation support for multiple languages
+- 🌍 **More Countries**: Expand beyond the initial 30 countries
 - 🏆 **Progression System**: Continental badges and explorer levels
+- 🎨 **Enhanced Visuals**: Country images and illustrations
+- 🔊 **Audio Support**: Pronunciation guides and sound effects
 
-See [Ideas.md](./Ideas.md) for all planned features.
+See [Ideas.md](./Ideas.md) for all planned features and enhancement ideas.
 
 ## 🙏 Acknowledgments
 

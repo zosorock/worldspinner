@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
 import countryCards from './data/countryCards';
@@ -79,6 +79,17 @@ const App = () => {
   const [feedback, setFeedback] = useState(null);
   const [tipIndex, setTipIndex] = useState(0);
   const [discoveredIds, setDiscoveredIds] = useState([]);
+  const [resetConfirmPending, setResetConfirmPending] = useState(false);
+  const resetTimeoutRef = useRef(null);
+
+  // Cleanup timer on unmount to prevent memory leaks and React act() warnings
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const capytanTips = [t('capytan.tip1'), t('capytan.tip2'), t('capytan.tip3')];
 
@@ -91,8 +102,19 @@ const App = () => {
     [discoveredIds],
   );
 
+  const availableCountries = useMemo(
+    () => countryCards.filter((card) => !discoveredIds.includes(card.id)),
+    [discoveredIds],
+  );
+
+  const isGameComplete = useMemo(() => discoveredIds.length === countryCards.length, [discoveredIds]);
+
   const spinGlobe = () => {
-    const nextCard = countryCards[Math.floor(Math.random() * countryCards.length)];
+    if (availableCountries.length === 0) {
+      return;
+    }
+
+    const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
     setActiveCountryId(nextCard.id);
     setClueIndex(0);
     setFeedback(null);
@@ -149,6 +171,37 @@ const App = () => {
     setGuess('');
   };
 
+  const handleResetProgress = () => {
+    // Clear any pending timeout to prevent race conditions
+    if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current);
+      resetTimeoutRef.current = null;
+    }
+    setDiscoveredIds([]);
+    setActiveCountryId(null);
+    setClueIndex(0);
+    setGuess('');
+    setFeedback(null);
+    setTipIndex(0);
+    setResetConfirmPending(false);
+  };
+
+  const handleManualReset = () => {
+    if (resetConfirmPending) {
+      handleResetProgress();
+    } else {
+      // Clear any existing timeout before setting a new one
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
+      setResetConfirmPending(true);
+      resetTimeoutRef.current = setTimeout(() => {
+        setResetConfirmPending(false);
+        resetTimeoutRef.current = null;
+      }, 3000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-100 to-slate-200 px-4 py-6">
       <motion.main
@@ -170,60 +223,97 @@ const App = () => {
               <p className="text-lg font-semibold text-slate-800">{capytanTips[tipIndex]}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={spinGlobe}
-            className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95"
-          >
-            {t('buttons.spinGlobe')}
-          </button>
+          <div className="space-y-2">
+            <p className="text-center text-sm font-semibold text-slate-600">
+              {t('progress.countriesDiscovered', { discovered: discoveredIds.length, total: countryCards.length })}
+            </p>
+            <button
+              type="button"
+              onClick={spinGlobe}
+              disabled={availableCountries.length === 0}
+              className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t('buttons.spinGlobe')}
+            </button>
+          </div>
         </section>
 
-        <section className="space-y-4 rounded-3xl bg-white px-5 py-6 shadow-sm">
-          <header className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
-              {t('clueBoard.header')}
-            </h2>
-            <span className="text-xs text-slate-400">
-              {activeCard
-                ? t('clueBoard.clueCounter', { current: clueIndex + 1, total: activeCard.clues.length })
-                : t('clueBoard.clueCounter', { current: 0, total: 3 })}
-            </span>
-          </header>
-          {currentClue ? (
-            <p className="text-base leading-relaxed text-slate-700">{currentClue.text}</p>
-          ) : (
-            <p className="text-base text-slate-600">{t('clueBoard.emptyState')}</p>
-          )}
-          <button
-            type="button"
-            onClick={revealNextClue}
-            disabled={!activeCard || clueIndex >= (activeCard?.clues.length ?? 0) - 1}
-            className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+        {isGameComplete ? (
+          <motion.section
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, type: 'spring', stiffness: 200 }}
+            className="space-y-4 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 px-5 py-6 shadow-lg"
           >
-            {t('buttons.nextClue')}
-          </button>
-          <form className="space-y-3" onSubmit={handleGuessSubmit} noValidate>
-            <label htmlFor="guess" className="space-y-2">
-              <span className="text-sm font-semibold text-slate-700">{t('form.guessLabel')}</span>
-              <input
-                id="guess"
-                name="guess"
-                type="text"
-                value={guess}
-                onChange={(event) => setGuess(event.target.value)}
-                placeholder={t('form.guessPlaceholder')}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-semibold text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-              />
-            </label>
-            <button
-              type="submit"
-              className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-base font-semibold text-white transition active:scale-95"
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-center"
             >
-              {t('buttons.submitGuess')}
+              <h2 className="text-2xl font-bold text-emerald-800">
+                {t('completion.congratulations', { total: countryCards.length })}
+              </h2>
+              <p className="mt-3 text-base text-emerald-700">{t('completion.message')}</p>
+            </motion.div>
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              type="button"
+              onClick={handleResetProgress}
+              className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95"
+            >
+              {t('completion.resetButton')}
+            </motion.button>
+          </motion.section>
+        ) : (
+          <section className="space-y-4 rounded-3xl bg-white px-5 py-6 shadow-sm">
+            <header className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
+                {t('clueBoard.header')}
+              </h2>
+              <span className="text-xs text-slate-400">
+                {activeCard
+                  ? t('clueBoard.clueCounter', { current: clueIndex + 1, total: activeCard.clues.length })
+                  : t('clueBoard.clueCounter', { current: 0, total: 3 })}
+              </span>
+            </header>
+            {currentClue ? (
+              <p className="text-base leading-relaxed text-slate-700">{currentClue.text}</p>
+            ) : (
+              <p className="text-base text-slate-600">{t('clueBoard.emptyState')}</p>
+            )}
+            <button
+              type="button"
+              onClick={revealNextClue}
+              disabled={!activeCard || clueIndex >= (activeCard?.clues.length ?? 0) - 1}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t('buttons.nextClue')}
             </button>
-          </form>
-        </section>
+            <form className="space-y-3" onSubmit={handleGuessSubmit} noValidate>
+              <label htmlFor="guess" className="space-y-2">
+                <span className="text-sm font-semibold text-slate-700">{t('form.guessLabel')}</span>
+                <input
+                  id="guess"
+                  name="guess"
+                  type="text"
+                  value={guess}
+                  onChange={(event) => setGuess(event.target.value)}
+                  placeholder={t('form.guessPlaceholder')}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-semibold text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                />
+              </label>
+              <button
+                type="submit"
+                className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-base font-semibold text-white transition active:scale-95"
+              >
+                {t('buttons.submitGuess')}
+              </button>
+            </form>
+          </section>
+        )}
 
         {feedback ? <FeedbackBanner type={feedback.type} message={feedback.message} /> : null}
 
@@ -245,6 +335,15 @@ const App = () => {
               ))}
             </ul>
           )}
+          {discoveredCards.length > 0 && !isGameComplete ? (
+            <button
+              type="button"
+              onClick={handleManualReset}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 active:scale-95"
+            >
+              {resetConfirmPending ? t('completion.resetButtonConfirm') : t('completion.resetButton')}
+            </button>
+          ) : null}
         </section>
       </motion.main>
     </div>
