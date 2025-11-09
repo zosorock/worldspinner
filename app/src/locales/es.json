@@ -48,6 +48,10 @@
     "guessLabel": "Adivina el País",
     "guessPlaceholder": "Escribe tu mejor respuesta..."
   },
+  "globe": {
+    "_comment": "Accesibilidad del elemento visual del globo",
+    "ariaLabel": "Animación de globo giratorio"
+  },
   "ariaLabels": {
     "_comment": "Etiquetas de accesibilidad para lectores de pantalla. {country} será reemplazado con el nombre del país.",
     "countryFlag": "bandera de {country}"

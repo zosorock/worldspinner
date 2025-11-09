@@ -48,6 +48,10 @@
     "guessLabel": "Guess the Country",
     "guessPlaceholder": "Type your best guess..."
   },
+  "globe": {
+    "_comment": "Globe visual element accessibility",
+    "ariaLabel": "Spinning globe animation"
+  },
   "ariaLabels": {
     "_comment": "Accessibility labels for screen readers. {country} will be replaced with the country name.",
     "countryFlag": "{country} flag"

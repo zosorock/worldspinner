@@ -227,6 +227,16 @@ const App = () => {
             <p className="text-center text-sm font-semibold text-slate-600">
               {t('progress.countriesDiscovered', { discovered: discoveredIds.length, total: countryCards.length })}
             </p>
+            {/* T-010: Static globe visual element - foundation for future animation tasks */}
+            <div className="flex justify-center py-2">
+              <img
+                src="/images/world.png"
+                alt={t('globe.ariaLabel')}
+                width="128"
+                height="128"
+                className="spinning-globe h-32 w-32 origin-center"
+              />
+            </div>
             <button
               type="button"
               onClick={spinGlobe}
