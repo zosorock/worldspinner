@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- **T-010 (dfc5bf1): Add Spinning Globe Visual Element** - Added static globe visual element as foundation for US-008 clock-hand spinning animation. Implemented 128x128px globe image (`/images/world.png`) positioned centrally above spin button in Capytan section using semantic `<img>` tag with proper accessibility (`alt="Spinning globe animation"`). Styled with Tailwind classes: `h-32 w-32` (sizing), `origin-center` (transform-origin for future rotation in T-013/T-014), and custom `spinning-globe` class for easy targeting in animation tasks. Element wrapped in `flex justify-center py-2` container for horizontal centering with vertical spacing. Globe is static with no rotation applied (animation deferred to T-013). Does not interfere with existing layout - all UI elements (spin button, clue board, discovery log, guess form) remain functional. Comprehensive test suite (8 tests) validates: image rendering with correct src attribute, proper ARIA label for screen readers, visibility without display:none/visibility:hidden, transform-origin:center class, spinning-globe class for targeting, no layout interference, positioning near spin button in same section, and no initial rotation transform. All 140 tests pass (132 existing + 8 new T-010 tests) with 97.87% overall coverage (statements), 91.86% branches, 100% functions. ESLint clean, Prettier formatted. Implements first task of 15-task sequence for US-008, establishing visual element that T-011 (spinning state), T-012 (rotation calculation), T-013 (Framer Motion animation), and subsequent tasks will animate. Globe image sourced from project assets, optimized for web delivery.
+
 ## [0.3.0] - 2025-11-05
 
 ### Summary
