@@ -5,7 +5,7 @@
 ## Active Stories
 
 ### US-008: Clock-Hand Style Globe Spinning Animation
-**Status**: Ready
+**Status**: In Progress
 **Priority**: Medium
 **Details**: [docs/user-stories/US-008-globe-spin-animation.md](docs/user-stories/US-008-globe-spin-animation.md)
 
@@ -18,7 +18,7 @@ Dramatic roulette-style spinning animation for the globe that builds anticipatio
 ### Foundation Tasks (Visual & State)
 
 ### T-010: Add Spinning Globe Visual Element
-**Status**: To Do | **Parent Story**: US-008 | **Priority**: High | **Owner**: Developer
+**Status**: In Progress | **Parent Story**: US-008 | **Priority**: High | **Owner**: Developer | **Retries**: 0
 
 Add a visible spinning globe element (located in `app/public/images/world.png`) to the UI that will rotate during the spin animation.
 
@@ -34,17 +34,17 @@ Create a visual element representing the globe that will rotate like a clock han
 - Use CSS class for easy targeting in animation tasks
 
 **Acceptance Checklist**:
-- [ ] Tests written and failing (RED complete)
-- [ ] Implementation makes tests pass (GREEN complete)
-- [ ] Code refactored with tests still passing (REFACTOR complete)
-- [ ] Globe visual element visible in UI near spin button
-- [ ] Element has proper ARIA label for screen readers
-- [ ] Styled appropriately with Tailwind CSS
-- [ ] Transform-origin set to center for future rotation
-- [ ] Element does not interfere with existing layout
-- [ ] Unit tests cover rendering and styling
-- [ ] Coverage ≥80% of modified code
-- [ ] Documentation updated in code comments
+- [x] Tests written and failing (RED complete)
+- [x] Implementation makes tests pass (GREEN complete)
+- [x] Code refactored with tests still passing (REFACTOR complete)
+- [x] Globe visual element visible in UI near spin button
+- [x] Element has proper ARIA label for screen readers
+- [x] Styled appropriately with Tailwind CSS
+- [x] Transform-origin set to center for future rotation
+- [x] Element does not interfere with existing layout
+- [x] Unit tests cover rendering and styling
+- [x] Coverage ≥80% of modified code
+- [x] Documentation updated in code comments
 
 ---
 

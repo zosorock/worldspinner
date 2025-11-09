@@ -925,3 +925,106 @@ describe('T-009: Manual Reset Progress Button', () => {
     expect(screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
   }, 10000);
 });
+
+describe('T-010: Add Spinning Globe Visual Element', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('renders globe image element in the UI', () => {
+    renderWithTranslation(<App />);
+
+    // Globe image should be visible with correct src
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    expect(globeImage).toBeInTheDocument();
+    expect(globeImage).toHaveAttribute('src', expect.stringContaining('world.png'));
+  });
+
+  test('globe element has proper ARIA label for accessibility', () => {
+    renderWithTranslation(<App />);
+
+    // Should have ARIA label for screen readers
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    expect(globeImage).toHaveAttribute('alt', 'Spinning globe animation');
+  });
+
+  test('globe element is visible and properly positioned in layout', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Element should be in the document
+    expect(globeImage).toBeInTheDocument();
+
+    // Globe should be positioned before (above) the spin button in the DOM
+    const globeSection = globeImage.closest('section');
+
+    // Verify globe image appears in DOM before spin button
+    const globeIndex = Array.from(globeSection.querySelectorAll('*')).indexOf(globeImage);
+    const buttonIndex = Array.from(globeSection.querySelectorAll('*')).indexOf(spinButton);
+    expect(globeIndex).toBeLessThan(buttonIndex);
+  });
+
+  test('globe element has transform-origin set to center for future rotation', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+
+    // Should have class that applies transform-origin: center
+    // Tailwind class: origin-center
+    expect(globeImage).toHaveClass('origin-center');
+  });
+
+  test('globe element has CSS class for easy targeting in animation tasks', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+
+    // Should have a specific class name for targeting
+    expect(globeImage).toHaveClass('spinning-globe');
+  });
+
+  test('globe element does not interfere with existing layout', () => {
+    renderWithTranslation(<App />);
+
+    // All existing UI elements should still be present
+    expect(screen.getByRole('button', { name: /spin the globe/i })).toBeInTheDocument();
+    expect(screen.getByText(/clue board/i)).toBeInTheDocument();
+    expect(screen.getByText(/discovery log/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/guess the country/i)).toBeInTheDocument();
+
+    // Globe should be present alongside them
+    expect(screen.getByRole('img', { name: /spinning globe animation/i })).toBeInTheDocument();
+  });
+
+  test('globe element is positioned near the spin button', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Both should be in the same section (Capytan section)
+    const globeSection = globeImage.closest('section');
+    const buttonSection = spinButton.closest('section');
+
+    expect(globeSection).toBe(buttonSection);
+  });
+
+  test('globe element is static with no rotation applied initially', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+
+    // Should not have any rotation transform applied initially
+    // We check that inline style doesn't have transform with rotate
+    const inlineStyle = globeImage.style.transform || '';
+    expect(inlineStyle).not.toMatch(/rotate/);
+  });
+});
