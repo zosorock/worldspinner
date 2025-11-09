@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useAnimate } from 'framer-motion';
 import PropTypes from 'prop-types';
 import countryCards from './data/countryCards';
 import useTranslation from './hooks/useTranslation';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import calculateSpinRotation from './utils/spinAnimation';
 
 const normaliseGuess = (value) => value.trim().toLowerCase();
 
@@ -83,6 +84,8 @@ const App = () => {
   // T-011: Track spinning animation state to prevent overlapping spins
   const [isSpinning, setIsSpinning] = useState(false);
   const resetTimeoutRef = useRef(null);
+  // T-013: Framer Motion animation scope for globe rotation
+  const [scope, animate] = useAnimate();
 
   // Cleanup timer on unmount to prevent memory leaks and React act() warnings
   useEffect(() => {
@@ -111,7 +114,8 @@ const App = () => {
 
   const isGameComplete = useMemo(() => discoveredIds.length === countryCards.length, [discoveredIds]);
 
-  const spinGlobe = () => {
+  // T-013: Make spinGlobe async to support animation completion
+  const spinGlobe = async () => {
     if (availableCountries.length === 0) {
       return;
     }
@@ -119,6 +123,15 @@ const App = () => {
     // T-011: Set spinning state to prevent multiple simultaneous spins
     setIsSpinning(true);
 
+    // T-012: Calculate rotation degrees and duration
+    const { totalDegrees, duration } = calculateSpinRotation();
+
+    // T-013: Animate globe rotation using Framer Motion
+    // Target the .spinning-globe element and rotate from 0 to totalDegrees
+    // Using linear easing for now (T-014 will add deceleration curve)
+    await animate('.spinning-globe', { rotate: totalDegrees }, { duration: duration / 1000, ease: 'linear' });
+
+    // T-015: After animation completes, reveal the mystery country
     const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
     setActiveCountryId(nextCard.id);
     setClueIndex(0);
@@ -126,12 +139,8 @@ const App = () => {
     setTipIndex((prev) => (prev + 1) % capytanTips.length);
     setGuess('');
 
-    // T-011: Reset spinning state after operation completes
-    // Using setTimeout(0) to simulate async operation - future animation tasks will replace this
-    // with actual animation completion timing
-    setTimeout(() => {
-      setIsSpinning(false);
-    }, 0);
+    // T-011: Reset spinning state after animation and selection complete
+    setIsSpinning(false);
   };
 
   const revealNextClue = () => {
@@ -235,7 +244,8 @@ const App = () => {
               <p className="text-lg font-semibold text-slate-800">{capytanTips[tipIndex]}</p>
             </div>
           </div>
-          <div className="space-y-2">
+          {/* T-013: Add scope ref for Framer Motion animation targeting */}
+          <div ref={scope} className="space-y-2">
             <p className="text-center text-sm font-semibold text-slate-600">
               {t('progress.countriesDiscovered', { discovered: discoveredIds.length, total: countryCards.length })}
             </p>

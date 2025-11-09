@@ -5,6 +5,20 @@ import { renderWithTranslation } from './test-utils/translationTestUtils';
 import App from './App';
 import countryCards from './data/countryCards';
 
+// T-013: Mock Framer Motion's useAnimate hook for testing
+// Animation completes immediately in tests instead of taking 8 seconds
+jest.mock('framer-motion', () => {
+  const actual = jest.requireActual('framer-motion');
+  return {
+    ...actual,
+    useAnimate: () => {
+      const scopeRef = { current: null };
+      const animate = jest.fn().mockResolvedValue(undefined);
+      return [scopeRef, animate];
+    },
+  };
+});
+
 // T-011: Helper to wait for spinning animation state to complete
 const waitForSpinComplete = async () => {
   const spinButton = screen.getByRole('button', { name: /spin the globe/i });
@@ -1116,56 +1130,41 @@ describe('T-011: Add Spinning State Management', () => {
   });
 
   test('isSpinning state properly resets after spin operation completes', async () => {
-    jest.useFakeTimers();
-    try {
-      renderWithTranslation(<App />);
+    renderWithTranslation(<App />);
 
-      const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
 
-      // Click to start spinning
-      await userEvent.click(spinButton);
+    // Click to start spinning
+    await userEvent.click(spinButton);
 
-      // Button should be disabled during spin
-      expect(spinButton).toBeDisabled();
+    // Button should be disabled during spin
+    expect(spinButton).toBeDisabled();
 
-      // Advance timers to simulate operation completion
-      // The operation should set isSpinning back to false
-      act(() => {
-        jest.runAllTimers();
-      });
+    // T-013: Wait for async animation to complete (mocked to resolve immediately)
+    await waitFor(() => expect(spinButton).not.toBeDisabled(), { timeout: 1000 });
 
-      // After operation completes, button should be enabled again
-      expect(spinButton).not.toBeDisabled();
-    } finally {
-      jest.useRealTimers();
-    }
+    // After operation completes, button should be enabled again
+    expect(spinButton).not.toBeDisabled();
   });
 
   test('multiple rapid clicks are prevented by isSpinning state', async () => {
-    jest.useFakeTimers();
-    try {
-      renderWithTranslation(<App />);
+    renderWithTranslation(<App />);
 
-      const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
 
-      // First click
-      await userEvent.click(spinButton);
-      expect(spinButton).toBeDisabled();
+    // First click
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
 
-      // Try to click again while spinning (should not trigger new spin)
-      // Button is disabled so this effectively prevents the second spin
-      const isDisabled = spinButton.hasAttribute('disabled');
-      expect(isDisabled).toBe(true);
+    // Try to click again while spinning (should not trigger new spin)
+    // Button is disabled so this effectively prevents the second spin
+    const isDisabled = spinButton.hasAttribute('disabled');
+    expect(isDisabled).toBe(true);
 
-      // Complete the operation
-      act(() => {
-        jest.runAllTimers();
-      });
+    // T-013: Wait for async animation to complete (mocked to resolve immediately)
+    await waitFor(() => expect(spinButton).not.toBeDisabled(), { timeout: 1000 });
 
-      // Now button should be enabled again
-      expect(spinButton).not.toBeDisabled();
-    } finally {
-      jest.useRealTimers();
-    }
+    // Now button should be enabled again
+    expect(spinButton).not.toBeDisabled();
   });
 });
