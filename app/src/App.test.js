@@ -1,9 +1,15 @@
 import React from 'react';
-import { screen, act } from '@testing-library/react';
+import { screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithTranslation } from './test-utils/translationTestUtils';
 import App from './App';
 import countryCards from './data/countryCards';
+
+// T-011: Helper to wait for spinning animation state to complete
+const waitForSpinComplete = async () => {
+  const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+  await waitFor(() => expect(spinButton).not.toBeDisabled(), { timeout: 1000 });
+};
 
 describe('World Spinner simplified UI', () => {
   let mathRandomSpy;
@@ -61,10 +67,15 @@ describe('World Spinner simplified UI', () => {
     expect(screen.getByText(/Spin the globe to start your adventure/i)).toBeInTheDocument();
     expect(screen.getByText(/Spin the globe to meet a mystery country/i)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    await userEvent.click(spinButton);
+    // T-011: Wait for spinning state to reset before next interaction
+    await waitFor(() => expect(spinButton).not.toBeDisabled());
     expect(screen.getByText(/Use the next clue if the first one feels tricky/i)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await userEvent.click(spinButton);
+    // T-011: Wait for spinning state to reset
+    await waitFor(() => expect(spinButton).not.toBeDisabled());
     expect(screen.getByText(/Correct guesses earn a new discovery card/i)).toBeInTheDocument();
   });
 });
@@ -266,6 +277,7 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Spin and discover first country
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-011: Wait for spinning state
     const firstCountryName = countryCards[0].displayName;
     expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
@@ -278,6 +290,7 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Spin again - should get second country (not first)
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-011: Wait for spinning state
 
     // Should NOT show first country's clue again
     expect(screen.queryByText(countryCards[0].clues[0].text)).not.toBeInTheDocument();
@@ -1026,5 +1039,133 @@ describe('T-010: Add Spinning Globe Visual Element', () => {
     // We check that inline style doesn't have transform with rotate
     const inlineStyle = globeImage.style.transform || '';
     expect(inlineStyle).not.toMatch(/rotate/);
+  });
+});
+
+describe('T-011: Add Spinning State Management', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('isSpinning state initializes to false', () => {
+    renderWithTranslation(<App />);
+
+    // Spin button should be enabled initially (not spinning)
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    expect(spinButton).not.toBeDisabled();
+  });
+
+  test('spin button is disabled when isSpinning is true', async () => {
+    // This test will verify the button becomes disabled during spinning
+    // We'll use a mock timer to test the state during the spin operation
+    jest.useFakeTimers();
+    try {
+      renderWithTranslation(<App />);
+
+      const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+      // Click to start spinning
+      await userEvent.click(spinButton);
+
+      // Button should be disabled immediately after click (isSpinning = true)
+      expect(spinButton).toBeDisabled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('spin button is enabled when isSpinning is false and countries available', () => {
+    renderWithTranslation(<App />);
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Initially not spinning and countries available = button enabled
+    expect(spinButton).not.toBeDisabled();
+  });
+
+  test('spin button disabled condition includes both no countries AND isSpinning', async () => {
+    renderWithTranslation(<App />);
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Initially enabled (has countries, not spinning)
+    expect(spinButton).not.toBeDisabled();
+
+    // Discover all countries to test the compound disabled logic
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Button should be disabled when no countries available
+    expect(spinButton).toBeDisabled();
+  });
+
+  test('isSpinning state properly resets after spin operation completes', async () => {
+    jest.useFakeTimers();
+    try {
+      renderWithTranslation(<App />);
+
+      const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+      // Click to start spinning
+      await userEvent.click(spinButton);
+
+      // Button should be disabled during spin
+      expect(spinButton).toBeDisabled();
+
+      // Advance timers to simulate operation completion
+      // The operation should set isSpinning back to false
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // After operation completes, button should be enabled again
+      expect(spinButton).not.toBeDisabled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('multiple rapid clicks are prevented by isSpinning state', async () => {
+    jest.useFakeTimers();
+    try {
+      renderWithTranslation(<App />);
+
+      const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+      // First click
+      await userEvent.click(spinButton);
+      expect(spinButton).toBeDisabled();
+
+      // Try to click again while spinning (should not trigger new spin)
+      // Button is disabled so this effectively prevents the second spin
+      const isDisabled = spinButton.hasAttribute('disabled');
+      expect(isDisabled).toBe(true);
+
+      // Complete the operation
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // Now button should be enabled again
+      expect(spinButton).not.toBeDisabled();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

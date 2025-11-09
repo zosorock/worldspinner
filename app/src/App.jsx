@@ -80,6 +80,8 @@ const App = () => {
   const [tipIndex, setTipIndex] = useState(0);
   const [discoveredIds, setDiscoveredIds] = useState([]);
   const [resetConfirmPending, setResetConfirmPending] = useState(false);
+  // T-011: Track spinning animation state to prevent overlapping spins
+  const [isSpinning, setIsSpinning] = useState(false);
   const resetTimeoutRef = useRef(null);
 
   // Cleanup timer on unmount to prevent memory leaks and React act() warnings
@@ -114,12 +116,22 @@ const App = () => {
       return;
     }
 
+    // T-011: Set spinning state to prevent multiple simultaneous spins
+    setIsSpinning(true);
+
     const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
     setActiveCountryId(nextCard.id);
     setClueIndex(0);
     setFeedback(null);
     setTipIndex((prev) => (prev + 1) % capytanTips.length);
     setGuess('');
+
+    // T-011: Reset spinning state after operation completes
+    // Using setTimeout(0) to simulate async operation - future animation tasks will replace this
+    // with actual animation completion timing
+    setTimeout(() => {
+      setIsSpinning(false);
+    }, 0);
   };
 
   const revealNextClue = () => {
@@ -240,7 +252,7 @@ const App = () => {
             <button
               type="button"
               onClick={spinGlobe}
-              disabled={availableCountries.length === 0}
+              disabled={availableCountries.length === 0 || isSpinning}
               className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t('buttons.spinGlobe')}
