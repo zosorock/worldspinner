@@ -52,6 +52,7 @@ describe('World Spinner simplified UI', () => {
     renderWithTranslation(<App />);
 
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /next clue/i }));
@@ -62,6 +63,7 @@ describe('World Spinner simplified UI', () => {
     renderWithTranslation(<App />);
 
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
 
     const guessField = screen.getByLabelText(/guess the country/i);
     await userEvent.type(guessField, 'United States of America');
@@ -163,6 +165,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       const guessField = screen.getByLabelText(/guess the country/i);
       await userEvent.type(guessField, countryCards[0].displayName);
       await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -175,6 +178,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       // Should show clue counter like "1/3"
       expect(screen.getByText(/1\/3/)).toBeInTheDocument();
 
@@ -191,6 +195,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
       // Discover a country
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       const guessField = screen.getByLabelText(/guess the country/i);
       await userEvent.type(guessField, countryCards[0].displayName);
       await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -213,6 +218,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       const guessField = screen.getByLabelText(/guess the country/i);
       await userEvent.type(guessField, 'Wrong Country Name');
       await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -239,6 +245,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
       // Spin globe
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
 
       // Make correct guess
       const guessField = screen.getByLabelText(/guess the country/i);
@@ -254,6 +261,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
       await userEvent.click(screen.getByRole('button', { name: /next clue/i }));
@@ -267,6 +275,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       expect(initialTip).toBeInTheDocument();
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       expect(screen.getByText(/Use the next clue if the first one feels tricky/i)).toBeInTheDocument();
     });
   });
@@ -320,6 +329,7 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Discover first country
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     const guessField = screen.getByLabelText(/guess the country/i);
     await userEvent.type(guessField, countryCards[0].displayName);
     await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -329,8 +339,11 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Spin multiple times - discovered country should never appear again
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
 
     // First country's clue should never appear again
     expect(screen.queryByText(countryCards[0].clues[0].text)).not.toBeInTheDocument();
@@ -785,6 +798,7 @@ describe('T-009: Manual Reset Progress Button', () => {
 
     // Start a game and discover a country (so reset button appears)
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
     const guessField = screen.getByLabelText(/guess the country/i);
@@ -793,6 +807,7 @@ describe('T-009: Manual Reset Progress Button', () => {
 
     // Now start another game
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     expect(screen.getByText(countryCards[1].clues[0].text)).toBeInTheDocument();
 
     // Double-click reset button

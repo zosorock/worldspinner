@@ -127,9 +127,9 @@ const App = () => {
     const { totalDegrees, duration } = calculateSpinRotation();
 
     // T-013: Animate globe rotation using Framer Motion
+    // T-014: Using easeOut for natural deceleration (slower toward the end)
     // Target the .spinning-globe element and rotate from 0 to totalDegrees
-    // Using linear easing for now (T-014 will add deceleration curve)
-    await animate('.spinning-globe', { rotate: totalDegrees }, { duration: duration / 1000, ease: 'linear' });
+    await animate('.spinning-globe', { rotate: totalDegrees }, { duration: duration / 1000, ease: 'easeOut' });
 
     // T-015: After animation completes, reveal the mystery country
     const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
