@@ -83,6 +83,7 @@ Each entry gets an **I-###** ID.
   - **source:** Human Gatekeeper
   - **date:** 2025-11-01
   - **notes:** Browser-based game that works seamlessly on laptops, phones, and tablets without requiring app downloads or installations.
+  - **status:** Implemented in [0.1.0] - 2025-11-01
 
 - **I-014** Country Selection
   - **source:** Human Gatekeeper
@@ -131,7 +132,6 @@ Each entry gets an **I-###** ID.
   - **source:** Human Gatekeeper
   - **date:** 2025-11-01
   - **notes:** Friendly capybara character named Capytan acts as game host. Provides clues, encouragement, and fun facts in a whimsical way. Adds personality and guidance throughout the game.
-  - **status:** Basic implementation in [0.1.0] - 2025-11-01 (tips and placeholder emoji; images and rotation deferred)
 
 - **I-023** Basic Internationalization Structure
   - **source:** Product Owner
@@ -174,12 +174,14 @@ Each entry gets an **I-###** ID.
   - **date:** 2025-11-02
   - **priority:** 4
   - **notes:** Remove cards from the shuffle deck after they are guessed correctly to improve user experience. Current implementation allows the same country to appear multiple times during a game session, making it increasingly difficult to encounter unguessed countries as the player progresses. This enhancement would track correctly guessed countries and filter them from the random selection pool, ensuring each country only appears once per session. This creates a better game flow and prevents frustration from repeatedly seeing already-completed countries. Implementation should consider session persistence (what happens on page refresh), visual feedback showing progress through the deck, and the option to reset/reshuffle once all cards are completed.
+  - **status:** Implemented in [0.3.0]
 
 - **I-030** Clock-Hand Style Globe Spinning Animation
   - **source:** Human Gatekeeper
   - **date:** 2025-11-02
   - **priority:** 6
   - **notes:** Interactive spinning globe animation triggered by the "Spin the Globe" button. Instead of the traditional globe rotation (spinning on its axis), implement a clock-hand style spin animation where the globe rotates around a central pivot point like a roulette wheel or prize wheel. This creates a more dramatic and anticipation-building effect before revealing the mystery country. The animation should be smooth, visually engaging, and appropriate for the target age group (6-12 years old). Consider adding sound effects during the spin and a satisfying "stop" animation when the country is revealed.
+  - **status:** Promoted to US-008 (2025-11-09). Simple roulette click sounds NOW IN SCOPE as core mechanic - not a future enhancement. Complex sound effects/music remain deferred.
 
 - **I-031** Auto-Dismiss Feedback Banners
   - **source:** Human Gatekeeper
@@ -210,3 +212,9 @@ Each entry gets an **I-###** ID.
   - **date:** 2025-11-03
   - **priority:** 7
   - **notes:** Implement a scoring system that awards different point values based on when the player guesses correctly during the three-clue progression. Players who identify the country after the first clue (animal) earn the highest points, demonstrating strong geographical knowledge. Guessing correctly after the second clue (food) awards medium points, while waiting until the third clue (flag) provides the lowest point value. This tiered scoring mechanism encourages players to think critically about each clue and rewards earlier correct guesses, adding a strategic element to the game. The scoring system should integrate with existing game mechanics and provide clear feedback showing points earned for each correct guess. Consider how this scoring interacts with the Explorer Passport progression system (I-003) and whether accumulated points could unlock additional badges or achievements beyond the current stamp collection mechanic.
+
+- **I-036** Spelling Suggestion for Close Matches
+  - **source:** Human Gatekeeper
+  - **date:** 2025-11-08
+  - **priority:** 3
+  - **notes:** Implement fuzzy matching on guess submissions to detect near-miss spellings and provide "Did you mean...?" suggestions to help players learn correct country name spellings while building confidence. When a player submits a guess that doesn't exactly match the target country name or its aliases, the system should calculate string similarity (using algorithms like Levenshtein distance) to determine if the guess is close to the correct answer. If a close match is detected (e.g., "aergentina" → "Argentina", "Japon" → "Japan", "Chinna" → "China"), display a helpful suggestion message like "Did you mean Argentina?" with an option to accept the suggestion or try again. This feature serves multiple educational purposes: it teaches proper spelling through gentle correction, prevents frustration from minor typos, encourages experimentation without penalty, and builds geographic vocabulary confidence especially for younger players (ages 7-12) who may know the country but struggle with spelling complex names. Implementation should consider: setting appropriate similarity thresholds to avoid false positives, handling multiple close matches, internationalization of suggestion messages, and maintaining game flow without feeling punitive. The feedback should feel supportive and educational rather than corrective, aligning with the game's philosophy of intellectually stimulating language without oversimplification.
