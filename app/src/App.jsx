@@ -83,6 +83,15 @@ const App = () => {
   const [resetConfirmPending, setResetConfirmPending] = useState(false);
   // T-011: Track spinning animation state to prevent overlapping spins
   const [isSpinning, setIsSpinning] = useState(false);
+  // T-018: Sound mute state with localStorage persistence
+  const [isSoundMuted, setIsSoundMuted] = useState(() => {
+    try {
+      const saved = localStorage.getItem('worldspinner_soundMuted');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
   const resetTimeoutRef = useRef(null);
   // T-013: Framer Motion animation scope for globe rotation
   const [scope, animate] = useAnimate();
@@ -223,6 +232,19 @@ const App = () => {
     }
   };
 
+  // T-018: Toggle sound mute with localStorage persistence
+  const handleToggleMute = () => {
+    setIsSoundMuted((prev) => {
+      const newValue = !prev;
+      try {
+        localStorage.setItem('worldspinner_soundMuted', String(newValue));
+      } catch {
+        // Silently fail if localStorage unavailable
+      }
+      return newValue;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-100 to-slate-200 px-4 py-6">
       <motion.main
@@ -259,14 +281,25 @@ const App = () => {
                 className="spinning-globe h-32 w-32 origin-center"
               />
             </div>
-            <button
-              type="button"
-              onClick={spinGlobe}
-              disabled={availableCountries.length === 0 || isSpinning}
-              className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t('buttons.spinGlobe')}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={spinGlobe}
+                disabled={availableCountries.length === 0 || isSpinning}
+                className="flex-1 rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {t('buttons.spinGlobe')}
+              </button>
+              {/* T-018: Mute/unmute sound control */}
+              <button
+                type="button"
+                onClick={handleToggleMute}
+                aria-label="Toggle sound effects"
+                className="rounded-2xl border border-slate-300 px-4 py-3 text-xl transition hover:bg-slate-50 active:scale-95"
+              >
+                {isSoundMuted ? '🔇' : '🔊'}
+              </button>
+            </div>
           </div>
         </section>
 
