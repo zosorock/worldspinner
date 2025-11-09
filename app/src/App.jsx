@@ -5,6 +5,8 @@ import countryCards from './data/countryCards';
 import useTranslation from './hooks/useTranslation';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import calculateSpinRotation from './utils/spinAnimation';
+import { preloadSound, playClick, stopAllSounds } from './utils/audioManager';
+import calculateClickInterval from './utils/clickInterval';
 
 const normaliseGuess = (value) => value.trim().toLowerCase();
 
@@ -93,14 +95,30 @@ const App = () => {
     }
   });
   const resetTimeoutRef = useRef(null);
+  const clickSoundRef = useRef(null);
+  const clickTimeoutsRef = useRef([]);
   // T-013: Framer Motion animation scope for globe rotation
   const [scope, animate] = useAnimate();
 
-  // Cleanup timer on unmount to prevent memory leaks and React act() warnings
+  // T-020: Preload click sound on mount
+  useEffect(() => {
+    preloadSound('/sounds/click.mp3').then((audio) => {
+      clickSoundRef.current = audio;
+    });
+  }, []);
+
+  // Cleanup timer and audio on unmount
   useEffect(() => {
     return () => {
       if (resetTimeoutRef.current) {
         clearTimeout(resetTimeoutRef.current);
+      }
+      // T-020: Clear all scheduled click timeouts
+      clickTimeoutsRef.current.forEach(clearTimeout);
+      clickTimeoutsRef.current = [];
+      // T-020: Stop any playing audio
+      if (clickSoundRef.current) {
+        stopAllSounds(clickSoundRef.current);
       }
     };
   }, []);
@@ -135,10 +153,34 @@ const App = () => {
     // T-012: Calculate rotation degrees and duration
     const { totalDegrees, duration } = calculateSpinRotation();
 
+    // T-020: Schedule click sounds during animation (unless muted)
+    if (!isSoundMuted && clickSoundRef.current) {
+      let elapsedTime = 0;
+      const scheduleNextClick = () => {
+        if (elapsedTime >= duration) return;
+
+        const progress = elapsedTime / duration;
+        const interval = calculateClickInterval(progress);
+
+        const timeoutId = setTimeout(() => {
+          playClick(clickSoundRef.current);
+          scheduleNextClick();
+        }, interval);
+
+        clickTimeoutsRef.current.push(timeoutId);
+        elapsedTime += interval;
+      };
+      scheduleNextClick();
+    }
+
     // T-013: Animate globe rotation using Framer Motion
     // T-014: Using easeOut for natural deceleration (slower toward the end)
     // Target the .spinning-globe element and rotate from 0 to totalDegrees
     await animate('.spinning-globe', { rotate: totalDegrees }, { duration: duration / 1000, ease: 'easeOut' });
+
+    // T-020: Clear any remaining scheduled clicks after animation completes
+    clickTimeoutsRef.current.forEach(clearTimeout);
+    clickTimeoutsRef.current = [];
 
     // T-015: After animation completes, reveal the mystery country
     const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
