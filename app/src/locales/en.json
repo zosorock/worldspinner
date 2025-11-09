@@ -54,7 +54,8 @@
   },
   "ariaLabels": {
     "_comment": "Accessibility labels for screen readers. {country} will be replaced with the country name.",
-    "countryFlag": "{country} flag"
+    "countryFlag": "{country} flag",
+    "toggleSound": "Toggle sound effects"
   },
   "progress": {
     "_comment": "Progress tracking messages showing discovery count. {discovered} and {total} will be replaced with numbers.",

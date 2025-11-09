@@ -336,7 +336,7 @@ const App = () => {
               <button
                 type="button"
                 onClick={handleToggleMute}
-                aria-label="Toggle sound effects"
+                aria-label={t('ariaLabels.toggleSound')}
                 className="rounded-2xl border border-slate-300 px-4 py-3 text-xl transition hover:bg-slate-50 active:scale-95"
               >
                 {isSoundMuted ? '🔇' : '🔊'}
