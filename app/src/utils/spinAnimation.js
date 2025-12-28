@@ -31,7 +31,7 @@ const calculateSpinRotation = () => {
 
   // Animation duration: 8 seconds (8000 milliseconds)
   // Full speed for ~3 seconds, deceleration for ~5 seconds to stop
-  const duration = 8000;
+  const duration = 6000;
 
   return {
     totalDegrees,

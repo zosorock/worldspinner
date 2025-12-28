@@ -14,8 +14,8 @@
  * calculateClickInterval(1.0) // ~300ms (slow clicks at end)
  */
 const calculateClickInterval = (progress) => {
-  const MIN_INTERVAL = 50; // Fast clicks: ~20 per second
-  const MAX_INTERVAL = 300; // Slow clicks: ~3 per second
+  const MIN_INTERVAL = 100; // Fast clicks: ~20 per second
+  const MAX_INTERVAL = 750; // Slow clicks: ~3 per second
 
   // Clamp progress to 0.0-1.0 range for safety
   const clampedProgress = Math.max(0, Math.min(1, progress));

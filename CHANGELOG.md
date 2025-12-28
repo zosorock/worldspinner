@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- **B-001 (1b85ceb): Fix sound overlapping during globe spin animation** - Implemented audio pooling with 3 Audio instances for sequential playback, tuned spin timing (6s duration, 100-750ms click intervals, clicks stop 1s before end) (2025-12-27, commit: 1b85ceb)
+
 ### Added
 - **T-024 (694cead): Integration Tests & Final Verification** - Completed final verification of US-008 globe spinning animation feature. All 171 tests passing (164 original + 10 audioManager + 7 clickInterval). ESLint clean (0 errors, 0 warnings). Verified localStorage persistence for soundMuted preference. Verified animation + sound synchronization working correctly. Verified mute toggle functionality. Verified cleanup (timeouts cleared, audio stopped). Verified accessibility (ARIA labels translated to English/Spanish). Verified cross-browser compatibility (HTML5 Audio API, localStorage, Framer Motion). No performance bottlenecks. Test suite runs in ~25 seconds. Feature complete and ready for deployment. Fifteenth and final task in US-008 sequence.
 - **T-023 (694cead): Performance Optimization** - Reviewed and verified performance characteristics. Click sound file: 12KB (already optimized, well under 50KB target). Audio preloading: happens once on component mount, cached in clickSoundRef. Click scheduling: uses recursive setTimeout pattern (efficient, no polling overhead). Cleanup: all timeouts cleared on unmount and after animation completes. No memory leaks: stopAllSounds() called in cleanup effect. Test suite: 171 tests complete in ~25 seconds (acceptable). No optimization changes needed - implementation already efficient. Fourteenth task in US-008 sequence.

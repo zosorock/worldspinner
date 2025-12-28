@@ -101,9 +101,10 @@ const App = () => {
   const [scope, animate] = useAnimate();
 
   // T-020: Preload click sound on mount
+  // B-001 (Retry #1): Use audio pool with 3 instances for sequential playback
   useEffect(() => {
-    preloadSound('/sounds/click.mp3').then((audio) => {
-      clickSoundRef.current = audio;
+    preloadSound('/sounds/click.mp3', { poolSize: 3 }).then((audioPool) => {
+      clickSoundRef.current = audioPool;
     });
   }, []);
 
@@ -157,7 +158,7 @@ const App = () => {
     if (!isSoundMuted && clickSoundRef.current) {
       let elapsedTime = 0;
       const scheduleNextClick = () => {
-        if (elapsedTime >= duration) return;
+        if (elapsedTime >= duration - 1000) return;
 
         const progress = elapsedTime / duration;
         const interval = calculateClickInterval(progress);

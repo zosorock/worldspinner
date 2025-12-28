@@ -560,4 +560,197 @@ Write full integration tests that verify the entire feature from button click th
 
 ---
 
+## Active Bugs
+
+### B-001: Sound Overlapping During Globe Spin Animation
+**Status**: In Progress | **Parent Story**: US-008 | **Priority**: Critical | **Owner**: Developer | **Retries**: 0
+
+Sound effects overlap and stack during globe spin animation, creating chaotic audio playback instead of clean sequential clicks.
+
+**Root Cause**:
+The implementation uses a single shared Audio instance (`clickSoundRef.current`) that is played repeatedly at short intervals (50-300ms). When `playClick()` is called before the previous sound has finished playing, it resets `currentTime = 0` on the same Audio instance and calls `play()` again. This causes the browser's audio engine to stack multiple play operations on the same instance, creating overlapping/chaotic audio.
+
+**Steps to Reproduce**:
+1. Ensure sound is unmuted (🔊)
+2. Click "Spin the Globe" button
+3. Listen to the click sounds during the 8-second animation
+4. Observe: Sounds overlap and create cacophony, especially at the start when intervals are fastest (50ms)
+
+**Expected Behavior**:
+Clean, sequential click sounds with each click completing before the next one plays, creating a roulette-style deceleration effect.
+
+**Actual Behavior**:
+Overlapping, stacking click sounds creating audio chaos. Multiple instances of the same sound play simultaneously.
+
+**Technical Details**:
+- Affected code: `app/src/App.jsx` lines 156-173 (scheduleNextClick function)
+- Affected code: `app/src/utils/audioManager.js` lines 48-68 (playClick function)
+- Single Audio instance: `clickSoundRef.current` (App.jsx line 98)
+- Problem: Resetting and replaying the same Audio instance before it finishes
+
+**Suggested Fix Approaches**:
+1. **Option A (Simplest)**: Add guard to prevent calling `play()` if audio is already playing (check `audioInstance.paused === false`)
+2. **Option B (Better control)**: Create new Audio instance for each click (clone or recreate)
+3. **Option C (Most robust)**: Use Web Audio API with AudioBufferSourceNode for precise control
+4. **Option D (Preseed-friendly)**: Extend the minimum click interval to be longer than the sound file duration
+
+**Acceptance Criteria**:
+- [x] Click sounds play sequentially without overlap
+- [x] Each click completes before the next one starts
+- [x] Audio deceleration effect is smooth and matches visual animation
+- [x] No audio chaos or stacking sounds
+- [ ] Solution works on desktop (Chrome, Firefox, Safari) - **REQUIRES MANUAL QA**
+- [ ] Solution works on mobile (iOS Safari, Android Chrome) - **REQUIRES MANUAL QA**
+- [x] Tests verify no overlapping playback
+- [x] Coverage ≥80% on modified code
+
+**Implementation (Retry #1)**:
+- Used audio pooling approach (Option A from Code Reviewer's suggestions)
+- Created pool of 3 Audio instances via `preloadSound('/sounds/click.mp3', { poolSize: 3 })`
+- Modified `playClick()` to rotate through pool in round-robin fashion
+- Modified `stopAllSounds()` to stop all instances in pool
+- Maintained backward compatibility for single Audio instance usage
+- All 178 tests passing (17 tests in audioManager.test.js including 7 new pooling tests)
+- Coverage: 86.88% statements, 90% branches, 83.33% functions, 88.13% lines
+- ESLint: 0 errors, 0 warnings
+- Build: successful
+
+**Cross-Browser Testing Requirements**:
+Manual QA must verify on the following browsers:
+1. **Desktop**:
+   - Chrome (latest): Verify click sounds play sequentially during 8-second spin
+   - Firefox (latest): Verify click sounds play sequentially during 8-second spin
+   - Safari (latest): Verify click sounds play sequentially during 8-second spin
+2. **Mobile**:
+   - iOS Safari (real device): Verify sounds work after first user interaction, sequential playback
+   - Android Chrome (real device): Verify sequential playback, no audio stacking
+3. **Test Procedure**:
+   - Unmute sound (🔊)
+   - Click "Spin the Globe" button
+   - Listen for clean sequential clicks (fast → slow deceleration)
+   - Verify no overlapping/stacking sounds
+   - Verify clicks sync with visual rotation speed
+
+**Notes**:
+- HG Feedback: "sounds like the sounds are overlapping. Are you using more than one sound? if you are starting the sound multiple times perhaps you need to limit the number of starts."
+- This is the highest priority bug identified in US-008 assessment
+- Audio pooling solution prevents dropped clicks while avoiding overlap
+- Rotation index tracked in module-level variable for stateful round-robin behavior
+
+---
+
+### B-002: Mute Button Unresponsive During Mid-Spin
+**Status**: Ready | **Parent Story**: US-008 | **Priority**: Medium | **Owner**: Scrum Master | **Retries**: 0
+
+The mute/unmute button can be clicked during globe spin animation, but it doesn't affect sounds that are already scheduled. Users expect clicking mute to immediately silence the spinning sound.
+
+**Root Cause**:
+The `scheduleNextClick()` function (App.jsx lines 156-173) checks `isSoundMuted` only once at the start of the animation (line 157). All subsequent click sounds are pre-scheduled via `setTimeout` and stored in `clickTimeoutsRef.current`. When the user toggles mute mid-spin, the state changes but the already-scheduled timeouts continue to execute and play sounds.
+
+**Steps to Reproduce**:
+1. Ensure sound is unmuted (🔊)
+2. Click "Spin the Globe" button
+3. While globe is spinning and sounds are playing, click the mute button (🔇)
+4. Observe: Sounds continue playing until the animation completes
+
+**Expected Behavior**:
+Clicking the mute button during animation should immediately stop all currently playing and scheduled sounds.
+
+**Actual Behavior**:
+Mute button changes state, but pre-scheduled click sounds continue to play until animation completes.
+
+**Technical Details**:
+- Affected code: `app/src/App.jsx` lines 156-173 (scheduleNextClick)
+- Affected code: `app/src/App.jsx` lines 277-288 (handleToggleMute)
+- Issue: `isSoundMuted` checked only at spinGlobe invocation, not before each playClick call
+
+**Suggested Fix Approaches**:
+1. **Option A**: Check `isSoundMuted` before each `playClick()` call in the timeout callback
+2. **Option B**: Clear all scheduled timeouts when mute is toggled, add cleanup to `handleToggleMute`
+3. **Option C**: Store interval ID and cancel/restart scheduling when mute changes
+
+**Acceptance Criteria**:
+- [ ] Clicking mute during animation immediately silences sounds
+- [ ] No click sounds play after mute button is clicked
+- [ ] Clicking unmute during animation resumes sounds from current progress point
+- [ ] Mute state persists to localStorage correctly
+- [ ] Tests verify mid-animation mute behavior
+- [ ] Coverage ≥80% on modified code
+
+**Notes**:
+- Identified as "Moderate" issue in US-008 assessment
+- User experience issue: Players expect immediate response to mute control
+
+---
+
+### B-003: Globe Does Not Spin 360° + Random on Each Spin After First
+**Status**: Ready | **Parent Story**: US-008 | **Priority**: Critical | **Owner**: Scrum Master | **Retries**: 0
+
+The globe does not complete a full 360° rotation plus random additional rotation on each spin after the first spin. Instead, it animates to absolute rotation values, causing backwards rotations or incomplete cycles.
+
+**Root Cause**:
+Framer Motion's `animate()` function animates **TO** an absolute value, not **BY** a relative amount. The code at line 179 (`await animate('.spinning-globe', { rotate: totalDegrees }, ...)`) treats `totalDegrees` as an absolute target rotation value. Since `calculateSpinRotation()` returns a fresh random value between 360-720° on each call, subsequent spins animate from the current rotation to the new absolute value, which can be less than the current rotation (causing backwards motion) or not a full cycle.
+
+**Example Rotation Behavior**:
+- Spin 1: 0° → 540° = **540° rotation** ✓ (360° + 180° as intended)
+- Spin 2: 540° → 450° = **-90° rotation** ✗ (BACKWARDS!)
+- Spin 3: 450° → 680° = **230° rotation** ✗ (only 230°, not a full cycle)
+
+**Steps to Reproduce**:
+1. Click "Spin the Globe" button (first spin works correctly)
+2. After globe stops, click "Spin the Globe" again
+3. Observe: Globe may rotate backwards or less than 360°
+4. Click again: Rotation amount varies randomly, sometimes backwards
+
+**Expected Behavior**:
+Each spin should rotate the globe exactly 360° + random(0-360°) in the forward direction FROM its current position, regardless of how many times it has been spun.
+
+**Actual Behavior**:
+First spin rotates correctly (360° + random). Subsequent spins animate to absolute rotation values, causing:
+- Backwards rotations when new `totalDegrees` < current rotation
+- Incomplete rotations when difference is less than 360°
+- Random rotation amounts that don't respect the 360° + random rule
+
+**Technical Details**:
+- Affected code: `app/src/App.jsx` line 179 (Framer Motion animate call)
+- Affected code: `app/src/utils/spinAnimation.js` lines 22-40 (calculateSpinRotation returns absolute value)
+- Issue: `rotate: totalDegrees` is an absolute target, not a relative rotation amount
+- Framer Motion animates FROM current rotation TO `totalDegrees` value
+
+**Suggested Fix Approaches**:
+1. **Option A (Cumulative tracking)**: Track cumulative rotation in state/ref, add new spin amount to it each time
+   ```javascript
+   // Store cumulative rotation
+   const cumulativeRotation = useRef(0);
+
+   // In spinGlobe:
+   const { spinAmount, duration } = calculateSpinRotation(); // Rename totalDegrees to spinAmount
+   cumulativeRotation.current += spinAmount; // Add to cumulative
+   await animate('.spinning-globe', { rotate: cumulativeRotation.current }, ...);
+   ```
+
+2. **Option B (Reset before each spin)**: Reset rotation to 0° before each spin, then animate to totalDegrees
+   - But HG said they like continuing from where it stopped, so this is less preferred
+
+3. **Option C (Relative animation syntax)**: Use Framer Motion's relative value syntax if available
+   - Research if Framer Motion supports `rotate: "+=540"` style animations
+
+**Acceptance Criteria**:
+- [ ] First spin rotates 360° + random(0-360°) forward
+- [ ] Second spin rotates 360° + random(0-360°) forward FROM the ending position of first spin
+- [ ] Third and subsequent spins each rotate 360° + random(0-360°) forward
+- [ ] Globe never rotates backwards
+- [ ] Globe never rotates less than 360° per spin
+- [ ] Visual verification: Globe completes at least one full rotation on every spin
+- [ ] Tests verify cumulative rotation increases monotonically
+- [ ] Coverage ≥80% on modified code
+
+**Notes**:
+- This is a **CRITICAL violation** of US-008 Acceptance Criteria #1: "Globe always spins at least 360° (one full rotation)"
+- HG Feedback: "it is not spinning 360+rand(360)"
+- First spin works correctly, but the bug manifests on all subsequent spins
+- Issue identified during US-008 acceptance review
+
+---
+
 ---
