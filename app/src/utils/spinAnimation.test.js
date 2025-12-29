@@ -55,11 +55,11 @@ describe('T-012: calculateSpinRotation utility', () => {
   });
 
   describe('duration constant', () => {
-    test('duration is constant 8000 milliseconds (8 seconds)', () => {
+    test('duration is constant 6000 milliseconds (6 seconds)', () => {
       // Call multiple times to ensure duration never changes
       for (let i = 0; i < 20; i += 1) {
         const result = calculateSpinRotation();
-        expect(result.duration).toBe(8000);
+        expect(result.duration).toBe(6000);
       }
     });
   });

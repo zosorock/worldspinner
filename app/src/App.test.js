@@ -6,17 +6,33 @@ import App from './App';
 import countryCards from './data/countryCards';
 
 // T-013: Mock Framer Motion's useAnimate hook for testing
-// Animation completes immediately in tests instead of taking 8 seconds
+// Animation completes immediately in tests instead of taking 6 seconds
+// B-003: Track animate calls to verify cumulative rotation behavior
+let mockAnimateCalls = [];
+const mockAnimate = jest.fn().mockImplementation((selector, keyframes) => {
+  mockAnimateCalls.push({ selector, keyframes });
+  return Promise.resolve();
+});
+
 jest.mock('framer-motion', () => {
   const actual = jest.requireActual('framer-motion');
   return {
     ...actual,
     useAnimate: () => {
       const scopeRef = { current: null };
-      const animate = jest.fn().mockResolvedValue(undefined);
-      return [scopeRef, animate];
+      return [scopeRef, mockAnimate];
     },
   };
+});
+
+// B-003: Helper to get rotation values from animate calls
+const getRotationCalls = () =>
+  mockAnimateCalls.filter((call) => call.selector === '.spinning-globe').map((call) => call.keyframes.rotate);
+
+// B-003: Reset mock calls before each test
+beforeEach(() => {
+  mockAnimateCalls = [];
+  mockAnimate.mockClear();
 });
 
 // T-011: Helper to wait for spinning animation state to complete
@@ -1181,5 +1197,166 @@ describe('T-011: Add Spinning State Management', () => {
 
     // Now button should be enabled again
     expect(spinButton).not.toBeDisabled();
+  });
+});
+
+describe('B-003: Sequential spin rotation verification', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    // Mock Math.random to return predictable values for rotation calculation
+    // calculateSpinRotation uses: 360 + Math.floor(Math.random() * 360)
+    mathRandomSpy = jest.spyOn(Math, 'random');
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('second spin rotates forward from first spin end position', async () => {
+    // Spin 1: random=0.5 → 360 + floor(0.5*360) = 360 + 180 = 540°
+    // Spin 2: random=0.25 → 360 + floor(0.25*360) = 360 + 90 = 450°
+    // Expected cumulative: 540°, then 990° (540 + 450)
+    mathRandomSpy
+      .mockReturnValueOnce(0.5) // First spin rotation
+      .mockReturnValueOnce(0) // First spin country selection
+      .mockReturnValueOnce(0.25) // Second spin rotation
+      .mockReturnValueOnce(0); // Second spin country selection
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // First spin
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    // Second spin
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+    expect(rotations).toHaveLength(2);
+    expect(rotations[0]).toBe(540); // First spin: 360 + 180
+    expect(rotations[1]).toBe(990); // Second spin: 540 + 450 (cumulative)
+  });
+
+  test('rotation values increase monotonically across multiple spins', async () => {
+    // All spins return same random value (0.5) for consistent 540° per spin
+    mathRandomSpy.mockReturnValue(0.5);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Perform 3 spins
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+    expect(rotations).toHaveLength(3);
+
+    // Each rotation should be greater than the previous
+    expect(rotations[1]).toBeGreaterThan(rotations[0]);
+    expect(rotations[2]).toBeGreaterThan(rotations[1]);
+  });
+
+  test('globe never rotates backwards (all increments positive)', async () => {
+    // Vary random values to ensure different spin amounts
+    mathRandomSpy
+      .mockReturnValueOnce(0.9) // 684°
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.1) // 396°
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.5) // 540°
+      .mockReturnValueOnce(0);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+
+    // Calculate differences between consecutive rotations
+    const differences = [];
+    rotations.reduce((prev, curr) => {
+      differences.push(curr - prev);
+      return curr;
+    }, 0);
+
+    // All differences should be positive (no backwards rotation)
+    differences.forEach((diff) => {
+      expect(diff).toBeGreaterThan(0);
+    });
+  });
+
+  test('each spin adds at least 360° to cumulative rotation', async () => {
+    // Use minimum random value (0) to test minimum rotation
+    mathRandomSpy.mockReturnValue(0);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+
+    // First spin should be at least 360°
+    expect(rotations[0]).toBeGreaterThanOrEqual(360);
+
+    // Difference between spins should be at least 360°
+    const increment = rotations[1] - rotations[0];
+    expect(increment).toBeGreaterThanOrEqual(360);
+  });
+
+  test('cumulative rotation resets to 0 on game reset', async () => {
+    // Use 0 for country selection so we get first country (countryCards[0])
+    mathRandomSpy
+      .mockReturnValueOnce(0.5) // First spin rotation (540°)
+      .mockReturnValueOnce(0) // First spin country selection (first card)
+      .mockReturnValueOnce(0.5) // Second spin rotation (540°)
+      .mockReturnValueOnce(0); // Second spin country selection
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // First spin before reset
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotationsBeforeReset = getRotationCalls();
+    expect(rotationsBeforeReset[0]).toBe(540);
+
+    // Guess correctly to make reset button visible (needs discoveredCards.length > 0)
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Find and click reset button (manual reset during game - uses emoji 🔄)
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+    await userEvent.click(resetButton); // First click shows confirmation
+    await userEvent.click(resetButton); // Second click resets
+
+    // Clear previous calls after reset
+    mockAnimateCalls = [];
+
+    // Spin after reset - should start from 0 again
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotationsAfterReset = getRotationCalls();
+    // After reset, first spin should be 540° (not 1080° which would be cumulative)
+    expect(rotationsAfterReset[0]).toBe(540);
   });
 });

@@ -97,6 +97,8 @@ const App = () => {
   const resetTimeoutRef = useRef(null);
   const clickSoundRef = useRef(null);
   const clickTimeoutsRef = useRef([]);
+  // B-003: Track cumulative rotation for forward-only spinning
+  const cumulativeRotationRef = useRef(0);
   // T-013: Framer Motion animation scope for globe rotation
   const [scope, animate] = useAnimate();
 
@@ -176,8 +178,13 @@ const App = () => {
 
     // T-013: Animate globe rotation using Framer Motion
     // T-014: Using easeOut for natural deceleration (slower toward the end)
-    // Target the .spinning-globe element and rotate from 0 to totalDegrees
-    await animate('.spinning-globe', { rotate: totalDegrees }, { duration: duration / 1000, ease: 'easeOut' });
+    // B-003: Accumulate rotation for forward-only spinning (never backwards)
+    cumulativeRotationRef.current += totalDegrees;
+    await animate(
+      '.spinning-globe',
+      { rotate: cumulativeRotationRef.current },
+      { duration: duration / 1000, ease: 'easeOut' },
+    );
 
     // T-020: Clear any remaining scheduled clicks after animation completes
     clickTimeoutsRef.current.forEach(clearTimeout);
@@ -257,6 +264,8 @@ const App = () => {
     setFeedback(null);
     setTipIndex(0);
     setResetConfirmPending(false);
+    // B-003: Reset cumulative rotation for fresh game start
+    cumulativeRotationRef.current = 0;
   };
 
   const handleManualReset = () => {
