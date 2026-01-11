@@ -48,9 +48,14 @@
     "guessLabel": "Adivina el País",
     "guessPlaceholder": "Escribe tu mejor respuesta..."
   },
+  "globe": {
+    "_comment": "Accesibilidad del elemento visual del globo",
+    "ariaLabel": "Animación de globo giratorio"
+  },
   "ariaLabels": {
     "_comment": "Etiquetas de accesibilidad para lectores de pantalla. {country} será reemplazado con el nombre del país.",
-    "countryFlag": "bandera de {country}"
+    "countryFlag": "bandera de {country}",
+    "toggleSound": "Activar o desactivar efectos de sonido"
   },
   "progress": {
     "_comment": "Mensajes de seguimiento del progreso mostrando el conteo de descubrimientos. {discovered} y {total} serán reemplazados con números.",

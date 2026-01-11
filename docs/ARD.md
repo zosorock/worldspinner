@@ -451,9 +451,209 @@ language: 'en' | 'es'                 // Current UI language
 
 ---
 
-## 9. Future Architecture Considerations
+## 9. Animation & Sound Architecture (US-008)
 
-### 9.1 Future Enhancements
+### 9.1 Overview
+
+The spinning globe animation is the **defining feature** of World Spinner - the game is named after this mechanic. Implemented in US-008, this system provides a dramatic roulette-style spinning experience with synchronized sound effects that build anticipation before revealing the mystery country.
+
+### 9.2 Animation Architecture
+
+**Visual Element Design:**
+- Globe image asset: `app/public/images/world.png`
+- Positioned above the "Spin the Globe" button in the Capytan section
+- Rotates around center point using CSS `transform-origin: center`
+- GPU-accelerated using CSS `will-change: transform`
+
+**Two-Phase Rotation System:**
+```javascript
+Phase 1: Full cycle (0° → 360°)
+Phase 2: Random stop (360° → 360° + random(0-360))
+Total rotation = 360 + random(0, 360) degrees
+Duration = 8 seconds (adjusted for dramatic effect)
+```
+
+**Framer Motion Implementation:**
+- Uses Framer Motion's imperative `animate()` API for precise control
+- CSS transform: `rotate(${totalDegrees}deg)`
+- Custom easing curve: `[0.33, 1, 0.68, 1]` (ease-out cubic bezier)
+- Provides smooth deceleration mimicking real roulette wheel physics
+
+**State Management:**
+```javascript
+// New animation state in App.jsx
+isSpinning: boolean          // Prevents overlapping animations
+isSoundMuted: boolean         // User sound preference
+```
+
+### 9.3 Sound Architecture
+
+**Audio File Specifications:**
+- Format: MP3 (broad browser support)
+- Duration: 50-100ms (short, crisp click)
+- File size: < 50KB
+- Location: `app/public/sounds/click.mp3`
+- Type: Roulette-style click/tick sound
+
+**AudioManager Utility:**
+Location: `app/src/utils/audioManager.js`
+
+Functions:
+- `preloadSound(src)` - Preloads audio file on component mount
+- `playClick(audioInstance)` - Plays single click sound
+- `stopAllSounds(audioInstance)` - Cleanup function
+- Browser compatibility checks with graceful fallback
+- HTML5 Audio API (no external dependencies)
+
+**Click Frequency Algorithm:**
+The sound system creates a deceleration effect matching the visual animation:
+
+```javascript
+function calculateClickInterval(progress) {
+  // progress: 0.0 to 1.0 (animation completion)
+  const minInterval = 50;   // Fast clicking at start (~20 clicks/second)
+  const maxInterval = 300;  // Slow clicking at end (~3 clicks/second)
+  const easedProgress = applyEasing(progress); // Same easing as visual
+  return minInterval + (maxInterval - minInterval) * easedProgress;
+}
+```
+
+**Sound Synchronization:**
+- Uses Framer Motion's `onUpdate` callback for animation progress
+- Calculates click intervals dynamically based on current velocity
+- Uses `requestAnimationFrame` for precise timing
+- Respects `isSoundMuted` state before each play
+- Proper cleanup of timers on animation completion
+
+### 9.4 Integration Flow
+
+**Enhanced Spin Flow:**
+```
+User clicks "Spin the Globe"
+    ↓
+setIsSpinning(true) [disable button]
+    ↓
+Start rotation animation (8 seconds)
+    ↓
+Parallel: Play click sounds with deceleration
+    ↓
+Animation completes at random angle
+    ↓
+Select country from available pool
+    ↓
+setActiveCountryId + update game state
+    ↓
+setIsSpinning(false) [re-enable button]
+    ↓
+Display clues and continue game flow
+```
+
+**Preservation of Existing Behavior:**
+- Country selection logic unchanged (random from available pool)
+- Duplicate prevention logic preserved
+- Clue system, guess validation, discovery cards all unchanged
+- Only difference: visual + audio animation before reveal
+
+### 9.5 Persistence Layer Extensions
+
+**New localStorage Keys:**
+- `worldspinner_soundMuted` (boolean) - User's sound preference
+- Loaded on component mount
+- Updated on mute button toggle
+- Defaults to `false` (sound enabled)
+
+### 9.6 Mobile Compatibility Strategy
+
+**iOS Safari Challenges:**
+- Requires user interaction to unlock audio context
+- First spin button click unlocks audio
+- Subsequent spins play sound normally
+- Visual animation always works (graceful degradation)
+
+**Android Chrome:**
+- Generally more permissive with audio
+- Tests confirm standard behavior
+- Same graceful fallback approach
+
+**Performance Optimization:**
+- CSS `will-change: transform` for GPU acceleration
+- Single audio instance reused (minimal memory)
+- Target: 60fps on desktop, ≥30fps on mobile (iPhone SE, mid-range Android)
+- Verified with React DevTools Profiler
+
+### 9.7 Testing Strategy
+
+**Unit Testing:**
+- `calculateSpinRotation()` - Pure function, 100% coverage
+- `calculateClickInterval()` - Pure function, 100% coverage
+- AudioManager utilities - Mocked Audio API, 100% coverage
+
+**Component Testing:**
+- Globe element rendering
+- Button disabled state during spin
+- Mute button state toggle
+- localStorage read/write
+
+**Integration Testing:**
+- Full spin flow: button → animate → sound → reveal
+- Mute control functionality
+- Rapid button clicks (no race conditions)
+- Edge cases: no countries available, audio fails to load
+
+**Manual Testing:**
+- Visual QA on desktop (Chrome, Firefox, Safari)
+- Visual QA on mobile (iOS Safari, Android Chrome)
+- Sound timing verification
+- Performance profiling
+
+### 9.8 Design Rationale
+
+**Why Framer Motion over CSS Animations:**
+- Already in use throughout the app
+- Provides precise animation callbacks for sound sync
+- Easy-to-configure easing curves
+- Better integration with React lifecycle
+
+**Why HTML5 Audio over Web Audio API:**
+- Preseed simplicity principle
+- Sufficient for single-sound playback
+- No need for complex audio graph
+- Smaller learning curve for contributors
+
+**Why Not External Audio Library (Howler.js):**
+- Additional 9KB dependency
+- HTML5 Audio sufficient for requirements
+- Can migrate later if browser compatibility issues arise
+
+**Why 8-Second Duration:**
+- Creates dramatic anticipation
+- Allows for sufficient click sound deceleration
+- Balances excitement with reasonable wait time
+- Adjusted from initial 2.5s based on UX considerations
+
+### 9.9 Future Enhancements (Out of Scope)
+
+**Animation:**
+- Parallax globe layers for depth
+- Particle effects during spin
+- Glow/trail effects on fast rotation
+
+**Sound:**
+- Multiple click sound variations
+- Victory fanfare on correct guess
+- Background music toggle
+- Sound effects for clue reveals
+
+**Performance:**
+- WebGL-based globe rendering for complex visuals
+- Service Worker caching for audio files
+- Preload next country's assets during spin
+
+---
+
+## 10. Future Architecture Considerations
+
+### 10.1 Future Enhancements
 
 **Content Expansion**:
 - Lazy load country data to reduce initial bundle size
@@ -479,7 +679,7 @@ language: 'en' | 'es'                 // Current UI language
 - Track game completion rates, clue effectiveness
 - A/B test clue wording for better hints
 
-### 9.2 Scalability Considerations
+### 10.2 Scalability Considerations
 
 **Current Limits**:
 - ~50 countries max with current hardcoded approach
@@ -493,9 +693,9 @@ language: 'en' | 'es'                 // Current UI language
 
 ---
 
-## 10. Traceability
+## 11. Traceability
 
-### 10.1 Document References
+### 11.1 Document References
 
 - **[AppSpec.md]**: Feature definitions, acceptance criteria
 - **[Product.md]**: Product vision, user stories
@@ -505,13 +705,14 @@ language: 'en' | 'es'                 // Current UI language
 - **[Evals.md]**: Evaluation schema for design reviews
 - **[Backlog.md]**: User stories and implementation tasks
 
-### 10.2 Version History
+### 11.2 Version History
 
 | Version | Date       | Author    | Changes |
 |---------|------------|-----------|---------|
 | 1.0     | 2025-11-01 | Architect | Initial ARD creation |
+| 1.1     | 2025-11-09 | Architect | Added Animation & Sound Architecture (Section 9, US-008) |
 
-### 10.3 Approval
+### 11.3 Approval
 
 - **Architect**: [Pending - this document]
 - **Human Gatekeeper**: [Awaiting review]

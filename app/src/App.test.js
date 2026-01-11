@@ -1,9 +1,54 @@
 import React from 'react';
-import { screen, act } from '@testing-library/react';
+import { screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithTranslation } from './test-utils/translationTestUtils';
 import App from './App';
 import countryCards from './data/countryCards';
+import { preloadSound, stopAllSounds } from './utils/audioManager';
+
+jest.mock('./utils/audioManager', () => ({
+  preloadSound: jest.fn(() => Promise.resolve(null)),
+  playClick: jest.fn(),
+  stopAllSounds: jest.fn(),
+}));
+
+// T-013: Mock Framer Motion's useAnimate hook for testing
+// Animation completes immediately in tests instead of taking 6 seconds
+// B-003: Track animate calls to verify cumulative rotation behavior
+let mockAnimateCalls = [];
+const mockAnimate = jest.fn().mockImplementation((selector, keyframes) => {
+  mockAnimateCalls.push({ selector, keyframes });
+  return Promise.resolve();
+});
+
+jest.mock('framer-motion', () => {
+  const actual = jest.requireActual('framer-motion');
+  return {
+    ...actual,
+    useAnimate: () => {
+      const scopeRef = { current: null };
+      return [scopeRef, mockAnimate];
+    },
+  };
+});
+
+// B-003: Helper to get rotation values from animate calls
+const getRotationCalls = () =>
+  mockAnimateCalls.filter((call) => call.selector === '.spinning-globe').map((call) => call.keyframes.rotate);
+
+// B-003: Reset mock calls before each test
+beforeEach(() => {
+  mockAnimateCalls = [];
+  mockAnimate.mockClear();
+  preloadSound.mockClear();
+  stopAllSounds.mockClear();
+});
+
+// T-011: Helper to wait for spinning animation state to complete
+const waitForSpinComplete = async () => {
+  const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+  await waitFor(() => expect(spinButton).not.toBeDisabled(), { timeout: 1000 });
+};
 
 describe('World Spinner simplified UI', () => {
   let mathRandomSpy;
@@ -32,6 +77,7 @@ describe('World Spinner simplified UI', () => {
     renderWithTranslation(<App />);
 
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /next clue/i }));
@@ -42,6 +88,7 @@ describe('World Spinner simplified UI', () => {
     renderWithTranslation(<App />);
 
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
 
     const guessField = screen.getByLabelText(/guess the country/i);
     await userEvent.type(guessField, 'United States of America');
@@ -61,10 +108,15 @@ describe('World Spinner simplified UI', () => {
     expect(screen.getByText(/Spin the globe to start your adventure/i)).toBeInTheDocument();
     expect(screen.getByText(/Spin the globe to meet a mystery country/i)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    await userEvent.click(spinButton);
+    // T-011: Wait for spinning state to reset before next interaction
+    await waitFor(() => expect(spinButton).not.toBeDisabled());
     expect(screen.getByText(/Use the next clue if the first one feels tricky/i)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await userEvent.click(spinButton);
+    // T-011: Wait for spinning state to reset
+    await waitFor(() => expect(spinButton).not.toBeDisabled());
     expect(screen.getByText(/Correct guesses earn a new discovery card/i)).toBeInTheDocument();
   });
 });
@@ -138,6 +190,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       const guessField = screen.getByLabelText(/guess the country/i);
       await userEvent.type(guessField, countryCards[0].displayName);
       await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -150,6 +203,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       // Should show clue counter like "1/3"
       expect(screen.getByText(/1\/3/)).toBeInTheDocument();
 
@@ -166,6 +220,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
       // Discover a country
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       const guessField = screen.getByLabelText(/guess the country/i);
       await userEvent.type(guessField, countryCards[0].displayName);
       await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -188,6 +243,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       const guessField = screen.getByLabelText(/guess the country/i);
       await userEvent.type(guessField, 'Wrong Country Name');
       await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -214,6 +270,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
 
       // Spin globe
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
 
       // Make correct guess
       const guessField = screen.getByLabelText(/guess the country/i);
@@ -229,6 +286,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       renderWithTranslation(<App />);
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
       await userEvent.click(screen.getByRole('button', { name: /next clue/i }));
@@ -242,6 +300,7 @@ describe('App.jsx Translation Integration (T-004)', () => {
       expect(initialTip).toBeInTheDocument();
 
       await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      await waitForSpinComplete(); // T-013: Wait for async animation
       expect(screen.getByText(/Use the next clue if the first one feels tricky/i)).toBeInTheDocument();
     });
   });
@@ -266,6 +325,7 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Spin and discover first country
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-011: Wait for spinning state
     const firstCountryName = countryCards[0].displayName;
     expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
@@ -278,6 +338,7 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Spin again - should get second country (not first)
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-011: Wait for spinning state
 
     // Should NOT show first country's clue again
     expect(screen.queryByText(countryCards[0].clues[0].text)).not.toBeInTheDocument();
@@ -293,6 +354,7 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Discover first country
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     const guessField = screen.getByLabelText(/guess the country/i);
     await userEvent.type(guessField, countryCards[0].displayName);
     await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
@@ -302,8 +364,11 @@ describe('T-006: Smart Card Removal - Filter Available Countries', () => {
 
     // Spin multiple times - discovered country should never appear again
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
 
     // First country's clue should never appear again
     expect(screen.queryByText(countryCards[0].clues[0].text)).not.toBeInTheDocument();
@@ -758,6 +823,7 @@ describe('T-009: Manual Reset Progress Button', () => {
 
     // Start a game and discover a country (so reset button appears)
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     expect(screen.getByText(countryCards[0].clues[0].text)).toBeInTheDocument();
 
     const guessField = screen.getByLabelText(/guess the country/i);
@@ -766,6 +832,7 @@ describe('T-009: Manual Reset Progress Button', () => {
 
     // Now start another game
     await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+    await waitForSpinComplete(); // T-013: Wait for async animation
     expect(screen.getByText(countryCards[1].clues[0].text)).toBeInTheDocument();
 
     // Double-click reset button
@@ -924,4 +991,563 @@ describe('T-009: Manual Reset Progress Button', () => {
     // Should reset progress to 0
     expect(screen.getByText(new RegExp(`0 of ${countryCards.length} countries discovered`, 'i'))).toBeInTheDocument();
   }, 10000);
+});
+
+describe('T-010: Add Spinning Globe Visual Element', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('renders globe image element in the UI', () => {
+    renderWithTranslation(<App />);
+
+    // Globe image should be visible with correct src
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    expect(globeImage).toBeInTheDocument();
+    expect(globeImage).toHaveAttribute('src', expect.stringContaining('world.png'));
+  });
+
+  test('globe element has proper ARIA label for accessibility', () => {
+    renderWithTranslation(<App />);
+
+    // Should have ARIA label for screen readers
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    expect(globeImage).toHaveAttribute('alt', 'Spinning globe animation');
+  });
+
+  test('globe element is visible and properly positioned in layout', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Element should be in the document
+    expect(globeImage).toBeInTheDocument();
+
+    // Globe should be positioned before (above) the spin button in the DOM
+    const globeSection = globeImage.closest('section');
+
+    // Verify globe image appears in DOM before spin button
+    const globeIndex = Array.from(globeSection.querySelectorAll('*')).indexOf(globeImage);
+    const buttonIndex = Array.from(globeSection.querySelectorAll('*')).indexOf(spinButton);
+    expect(globeIndex).toBeLessThan(buttonIndex);
+  });
+
+  test('globe element has transform-origin set to center for future rotation', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+
+    // Should have class that applies transform-origin: center
+    // Tailwind class: origin-center
+    expect(globeImage).toHaveClass('origin-center');
+  });
+
+  test('globe element has CSS class for easy targeting in animation tasks', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+
+    // Should have a specific class name for targeting
+    expect(globeImage).toHaveClass('spinning-globe');
+  });
+
+  test('globe element does not interfere with existing layout', () => {
+    renderWithTranslation(<App />);
+
+    // All existing UI elements should still be present
+    expect(screen.getByRole('button', { name: /spin the globe/i })).toBeInTheDocument();
+    expect(screen.getByText(/clue board/i)).toBeInTheDocument();
+    expect(screen.getByText(/discovery log/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/guess the country/i)).toBeInTheDocument();
+
+    // Globe should be present alongside them
+    expect(screen.getByRole('img', { name: /spinning globe animation/i })).toBeInTheDocument();
+  });
+
+  test('globe element is positioned near the spin button', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Both should be in the same section (Capytan section)
+    const globeSection = globeImage.closest('section');
+    const buttonSection = spinButton.closest('section');
+
+    expect(globeSection).toBe(buttonSection);
+  });
+
+  test('globe element is static with no rotation applied initially', () => {
+    renderWithTranslation(<App />);
+
+    const globeImage = screen.getByRole('img', { name: /spinning globe animation/i });
+
+    // Should not have any rotation transform applied initially
+    // We check that inline style doesn't have transform with rotate
+    const inlineStyle = globeImage.style.transform || '';
+    expect(inlineStyle).not.toMatch(/rotate/);
+  });
+});
+
+describe('T-011: Add Spinning State Management', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('isSpinning state initializes to false', () => {
+    renderWithTranslation(<App />);
+
+    // Spin button should be enabled initially (not spinning)
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+    expect(spinButton).not.toBeDisabled();
+  });
+
+  test('spin button is disabled when isSpinning is true', async () => {
+    // This test will verify the button becomes disabled during spinning
+    // We'll use a mock timer to test the state during the spin operation
+    jest.useFakeTimers();
+    try {
+      renderWithTranslation(<App />);
+
+      const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+      // Click to start spinning
+      await userEvent.click(spinButton);
+
+      // Button should be disabled immediately after click (isSpinning = true)
+      expect(spinButton).toBeDisabled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('spin button is enabled when isSpinning is false and countries available', () => {
+    renderWithTranslation(<App />);
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Initially not spinning and countries available = button enabled
+    expect(spinButton).not.toBeDisabled();
+  });
+
+  test('spin button disabled condition includes both no countries AND isSpinning', async () => {
+    renderWithTranslation(<App />);
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Initially enabled (has countries, not spinning)
+    expect(spinButton).not.toBeDisabled();
+
+    // Discover all countries to test the compound disabled logic
+    const remainingCards = [...countryCards];
+
+    await countryCards.reduce(async (promise) => {
+      await promise;
+
+      const nextCard = remainingCards.shift();
+      await userEvent.click(screen.getByRole('button', { name: /spin the globe/i }));
+      const guessField = screen.getByLabelText(/guess the country/i);
+      await userEvent.clear(guessField);
+      await userEvent.type(guessField, nextCard.displayName);
+      await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+    }, Promise.resolve());
+
+    // Button should be disabled when no countries available
+    expect(spinButton).toBeDisabled();
+  });
+
+  test('isSpinning state properly resets after spin operation completes', async () => {
+    renderWithTranslation(<App />);
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Click to start spinning
+    await userEvent.click(spinButton);
+
+    // Button should be disabled during spin
+    expect(spinButton).toBeDisabled();
+
+    // T-013: Wait for async animation to complete (mocked to resolve immediately)
+    await waitFor(() => expect(spinButton).not.toBeDisabled(), { timeout: 1000 });
+
+    // After operation completes, button should be enabled again
+    expect(spinButton).not.toBeDisabled();
+  });
+
+  test('multiple rapid clicks are prevented by isSpinning state', async () => {
+    renderWithTranslation(<App />);
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // First click
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
+
+    // Try to click again while spinning (should not trigger new spin)
+    // Button is disabled so this effectively prevents the second spin
+    const isDisabled = spinButton.hasAttribute('disabled');
+    expect(isDisabled).toBe(true);
+
+    // T-013: Wait for async animation to complete (mocked to resolve immediately)
+    await waitFor(() => expect(spinButton).not.toBeDisabled(), { timeout: 1000 });
+
+    // Now button should be enabled again
+    expect(spinButton).not.toBeDisabled();
+  });
+});
+
+describe('B-003: Sequential spin rotation verification', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    // Mock Math.random to return predictable values for rotation calculation
+    // calculateSpinRotation uses: 360 + Math.floor(Math.random() * 360)
+    mathRandomSpy = jest.spyOn(Math, 'random');
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('second spin rotates forward from first spin end position', async () => {
+    // Spin 1: random=0.5 → 360 + floor(0.5*360) = 360 + 180 = 540°
+    // Spin 2: random=0.25 → 360 + floor(0.25*360) = 360 + 90 = 450°
+    // Expected cumulative: 540°, then 990° (540 + 450)
+    mathRandomSpy
+      .mockReturnValueOnce(0.5) // First spin rotation
+      .mockReturnValueOnce(0) // First spin country selection
+      .mockReturnValueOnce(0.25) // Second spin rotation
+      .mockReturnValueOnce(0); // Second spin country selection
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // First spin
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    // Second spin
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+    expect(rotations).toHaveLength(2);
+    expect(rotations[0]).toBe(540); // First spin: 360 + 180
+    expect(rotations[1]).toBe(990); // Second spin: 540 + 450 (cumulative)
+  });
+
+  test('rotation values increase monotonically across multiple spins', async () => {
+    // All spins return same random value (0.5) for consistent 540° per spin
+    mathRandomSpy.mockReturnValue(0.5);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // Perform 3 spins
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+    expect(rotations).toHaveLength(3);
+
+    // Each rotation should be greater than the previous
+    expect(rotations[1]).toBeGreaterThan(rotations[0]);
+    expect(rotations[2]).toBeGreaterThan(rotations[1]);
+  });
+
+  test('globe never rotates backwards (all increments positive)', async () => {
+    // Vary random values to ensure different spin amounts
+    mathRandomSpy
+      .mockReturnValueOnce(0.9) // 684°
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.1) // 396°
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.5) // 540°
+      .mockReturnValueOnce(0);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+
+    // Calculate differences between consecutive rotations
+    const differences = [];
+    rotations.reduce((prev, curr) => {
+      differences.push(curr - prev);
+      return curr;
+    }, 0);
+
+    // All differences should be positive (no backwards rotation)
+    differences.forEach((diff) => {
+      expect(diff).toBeGreaterThan(0);
+    });
+  });
+
+  test('each spin adds at least 360° to cumulative rotation', async () => {
+    // Use minimum random value (0) to test minimum rotation
+    mathRandomSpy.mockReturnValue(0);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+
+    // First spin should be at least 360°
+    expect(rotations[0]).toBeGreaterThanOrEqual(360);
+
+    // Difference between spins should be at least 360°
+    const increment = rotations[1] - rotations[0];
+    expect(increment).toBeGreaterThanOrEqual(360);
+  });
+
+  test('cumulative rotation resets to 0 on game reset', async () => {
+    // Use 0 for country selection so we get first country (countryCards[0])
+    mathRandomSpy
+      .mockReturnValueOnce(0.5) // First spin rotation (540°)
+      .mockReturnValueOnce(0) // First spin country selection (first card)
+      .mockReturnValueOnce(0.5) // Second spin rotation (540°)
+      .mockReturnValueOnce(0); // Second spin country selection
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    // First spin before reset
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotationsBeforeReset = getRotationCalls();
+    expect(rotationsBeforeReset[0]).toBe(540);
+
+    // Guess correctly to make reset button visible (needs discoveredCards.length > 0)
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    // Find and click reset button (manual reset during game - uses emoji 🔄)
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+    await userEvent.click(resetButton); // First click shows confirmation
+    await userEvent.click(resetButton); // Second click resets
+
+    // Clear previous calls after reset
+    mockAnimateCalls = [];
+
+    // Spin after reset - should start from 0 again
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotationsAfterReset = getRotationCalls();
+    // After reset, first spin should be 540° (not 1080° which would be cumulative)
+    expect(rotationsAfterReset[0]).toBe(540);
+  });
+});
+
+describe('B-004: Reset during spin race conditions', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('reset during spin keeps game reset after animation completes', async () => {
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
+
+    await userEvent.dblClick(resetButton);
+
+    await act(async () => {
+      resolveSpin();
+    });
+
+    await waitForSpinComplete();
+
+    expect(screen.getByText(/Spin the globe to get your first animal clue/i)).toBeInTheDocument();
+  });
+
+  test('reset during spin clears click sounds', async () => {
+    const mockAudioPool = [{ paused: true, play: jest.fn(), pause: jest.fn(), currentTime: 0 }];
+    preloadSound.mockResolvedValueOnce(mockAudioPool);
+
+    renderWithTranslation(<App />);
+    await waitFor(() => expect(preloadSound).toHaveBeenCalled());
+    await act(async () => {
+      await preloadSound.mock.results[0].value;
+    });
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    await userEvent.click(resetButton);
+    await userEvent.click(resetButton);
+
+    expect(stopAllSounds).toHaveBeenCalledWith(mockAudioPool);
+
+    await act(async () => {
+      resolveSpin();
+    });
+  });
+
+  test('reset syncs rotation to 0 and next spin rotates forward', async () => {
+    mathRandomSpy
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+    await userEvent.dblClick(resetButton);
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+    expect(rotations).toContain(0);
+    expect(rotations[rotations.length - 1]).toBe(540);
+  });
+
+  test('multiple rapid resets keep game reset after spin resolves', async () => {
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
+
+    await userEvent.dblClick(resetButton);
+    await userEvent.dblClick(resetButton);
+
+    await act(async () => {
+      resolveSpin();
+    });
+
+    await waitForSpinComplete();
+    expect(screen.getByText(/Spin the globe to get your first animal clue/i)).toBeInTheDocument();
+  });
+
+  test('spin button re-enables after reset cancels an in-flight spin', async () => {
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
+
+    await userEvent.dblClick(resetButton);
+    expect(spinButton).not.toBeDisabled();
+
+    await act(async () => {
+      resolveSpin();
+    });
+  });
 });

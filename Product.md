@@ -71,6 +71,12 @@ World Spinner is an educational geography game for children ages 7-12 that makes
    - **Acceptance Criteria**: See Done.md for detailed criteria covering unique country appearances, progress tracking, game completion state, and manual reset functionality.
    - **Status**: Done (v0.3.0)
 
+8. **US-008 — Clock-Hand Style Globe Spinning Animation**
+   - **Summary**: Dramatic roulette-style spinning animation with synchronized click sounds that decelerate as the globe slows, plus mute control with preference persistence.
+   - **Business Value**: Transforms the spin action into an exciting, anticipation-building moment that mimics real prize wheels. Audio feedback enhances engagement while respecting user preferences.
+   - **Acceptance Criteria**: See Backlog.md for detailed criteria covering globe rotation (360°+ per spin), easeOut deceleration, click sound synchronization, mute toggle, and cumulative rotation tracking.
+   - **Status**: Done (v0.4.0)
+
 ## Traceability
 - RACI ownership and handoff obligations are governed by [Workflow.md], [RACI.md], and [Schema.md].
 - Definition of Done checkpoints must map back to [DoD.md], with evaluation artifacts logged per [Evals.md].

@@ -1,9 +1,12 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useAnimate } from 'framer-motion';
 import PropTypes from 'prop-types';
 import countryCards from './data/countryCards';
 import useTranslation from './hooks/useTranslation';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import calculateSpinRotation from './utils/spinAnimation';
+import { preloadSound, playClick, stopAllSounds } from './utils/audioManager';
+import calculateClickInterval from './utils/clickInterval';
 
 const normaliseGuess = (value) => value.trim().toLowerCase();
 
@@ -80,13 +83,47 @@ const App = () => {
   const [tipIndex, setTipIndex] = useState(0);
   const [discoveredIds, setDiscoveredIds] = useState([]);
   const [resetConfirmPending, setResetConfirmPending] = useState(false);
+  // T-011: Track spinning animation state to prevent overlapping spins
+  const [isSpinning, setIsSpinning] = useState(false);
+  // T-018: Sound mute state with localStorage persistence
+  const [isSoundMuted, setIsSoundMuted] = useState(() => {
+    try {
+      const saved = localStorage.getItem('worldspinner_soundMuted');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
   const resetTimeoutRef = useRef(null);
+  const clickSoundRef = useRef(null);
+  const clickTimeoutsRef = useRef([]);
+  // B-003: Track cumulative rotation for forward-only spinning
+  const cumulativeRotationRef = useRef(0);
+  // B-004: Token to detect reset during an active spin
+  const spinTokenRef = useRef(0);
+  // T-013: Framer Motion animation scope for globe rotation
+  const [scope, animate] = useAnimate();
 
-  // Cleanup timer on unmount to prevent memory leaks and React act() warnings
+  // T-020: Preload click sound on mount
+  // B-001 (Retry #1): Use audio pool with 3 instances for sequential playback
+  useEffect(() => {
+    preloadSound('/sounds/click.mp3', { poolSize: 3 }).then((audioPool) => {
+      clickSoundRef.current = audioPool;
+    });
+  }, []);
+
+  // Cleanup timer and audio on unmount
   useEffect(() => {
     return () => {
       if (resetTimeoutRef.current) {
         clearTimeout(resetTimeoutRef.current);
+      }
+      // T-020: Clear all scheduled click timeouts
+      clickTimeoutsRef.current.forEach(clearTimeout);
+      clickTimeoutsRef.current = [];
+      // T-020: Stop any playing audio
+      if (clickSoundRef.current) {
+        stopAllSounds(clickSoundRef.current);
       }
     };
   }, []);
@@ -109,17 +146,69 @@ const App = () => {
 
   const isGameComplete = useMemo(() => discoveredIds.length === countryCards.length, [discoveredIds]);
 
-  const spinGlobe = () => {
+  // T-013: Make spinGlobe async to support animation completion
+  const spinGlobe = async () => {
     if (availableCountries.length === 0) {
       return;
     }
 
+    // T-011: Set spinning state to prevent multiple simultaneous spins
+    setIsSpinning(true);
+    const spinToken = spinTokenRef.current;
+
+    // T-012: Calculate rotation degrees and duration
+    const { totalDegrees, duration } = calculateSpinRotation();
+
+    // T-020: Schedule click sounds during animation (unless muted)
+    if (!isSoundMuted && clickSoundRef.current) {
+      let elapsedTime = 0;
+      const scheduleNextClick = () => {
+        if (elapsedTime >= duration - 1000) return;
+
+        const progress = elapsedTime / duration;
+        const interval = calculateClickInterval(progress);
+
+        const timeoutId = setTimeout(() => {
+          playClick(clickSoundRef.current);
+          scheduleNextClick();
+        }, interval);
+
+        clickTimeoutsRef.current.push(timeoutId);
+        elapsedTime += interval;
+      };
+      scheduleNextClick();
+    }
+
+    // T-013: Animate globe rotation using Framer Motion
+    // T-014: Using easeOut for natural deceleration (slower toward the end)
+    // B-003: Accumulate rotation for forward-only spinning (never backwards)
+    cumulativeRotationRef.current += totalDegrees;
+    await animate(
+      '.spinning-globe',
+      { rotate: cumulativeRotationRef.current },
+      { duration: duration / 1000, ease: 'easeOut' },
+    );
+
+    // T-020: Clear any remaining scheduled clicks after animation completes
+    clickTimeoutsRef.current.forEach(clearTimeout);
+    clickTimeoutsRef.current = [];
+
+    // B-004: Guard against reset during spin before applying state updates
+    if (spinTokenRef.current !== spinToken) {
+      setIsSpinning(false);
+      return;
+    }
+
+    // T-015: After animation completes, reveal the mystery country
     const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
     setActiveCountryId(nextCard.id);
     setClueIndex(0);
     setFeedback(null);
     setTipIndex((prev) => (prev + 1) % capytanTips.length);
     setGuess('');
+
+    // T-011: Reset spinning state after animation and selection complete
+    setIsSpinning(false);
   };
 
   const revealNextClue = () => {
@@ -171,11 +260,19 @@ const App = () => {
     setGuess('');
   };
 
-  const handleResetProgress = () => {
+  const handleResetProgress = async () => {
     // Clear any pending timeout to prevent race conditions
     if (resetTimeoutRef.current) {
       clearTimeout(resetTimeoutRef.current);
       resetTimeoutRef.current = null;
+    }
+    spinTokenRef.current += 1;
+    setIsSpinning(false);
+    // B-004: Clear any scheduled click sounds during reset
+    clickTimeoutsRef.current.forEach(clearTimeout);
+    clickTimeoutsRef.current = [];
+    if (clickSoundRef.current) {
+      stopAllSounds(clickSoundRef.current);
     }
     setDiscoveredIds([]);
     setActiveCountryId(null);
@@ -184,6 +281,10 @@ const App = () => {
     setFeedback(null);
     setTipIndex(0);
     setResetConfirmPending(false);
+    // B-003: Reset cumulative rotation for fresh game start
+    cumulativeRotationRef.current = 0;
+    // B-004: Sync DOM rotation to avoid backwards spins after reset
+    await animate('.spinning-globe', { rotate: 0 }, { duration: 0 });
   };
 
   const handleManualReset = () => {
@@ -200,6 +301,19 @@ const App = () => {
         resetTimeoutRef.current = null;
       }, 3000);
     }
+  };
+
+  // T-018: Toggle sound mute with localStorage persistence
+  const handleToggleMute = () => {
+    setIsSoundMuted((prev) => {
+      const newValue = !prev;
+      try {
+        localStorage.setItem('worldspinner_soundMuted', String(newValue));
+      } catch {
+        // Silently fail if localStorage unavailable
+      }
+      return newValue;
+    });
   };
 
   return (
@@ -223,18 +337,40 @@ const App = () => {
               <p className="text-lg font-semibold text-slate-800">{capytanTips[tipIndex]}</p>
             </div>
           </div>
-          <div className="space-y-2">
+          {/* T-013: Add scope ref for Framer Motion animation targeting */}
+          <div ref={scope} className="space-y-2">
             <p className="text-center text-sm font-semibold text-slate-600">
               {t('progress.countriesDiscovered', { discovered: discoveredIds.length, total: countryCards.length })}
             </p>
-            <button
-              type="button"
-              onClick={spinGlobe}
-              disabled={availableCountries.length === 0}
-              className="w-full rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t('buttons.spinGlobe')}
-            </button>
+            {/* T-010: Static globe visual element - foundation for future animation tasks */}
+            <div className="flex justify-center py-2">
+              <img
+                src="/images/world.png"
+                alt={t('globe.ariaLabel')}
+                width="128"
+                height="128"
+                className="spinning-globe h-32 w-32 origin-center"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={spinGlobe}
+                disabled={availableCountries.length === 0 || isSpinning}
+                className="flex-1 rounded-2xl bg-emerald-500 px-4 py-3 text-base font-semibold text-white shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {t('buttons.spinGlobe')}
+              </button>
+              {/* T-018: Mute/unmute sound control */}
+              <button
+                type="button"
+                onClick={handleToggleMute}
+                aria-label={t('ariaLabels.toggleSound')}
+                className="rounded-2xl border border-slate-300 px-4 py-3 text-xl transition hover:bg-slate-50 active:scale-95"
+              >
+                {isSoundMuted ? '🔇' : '🔊'}
+              </button>
+            </div>
           </div>
         </section>
 

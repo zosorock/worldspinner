@@ -1,6 +1,7 @@
-<img src="app/public/images/capytan_front.jpeg" alt="Capytan the Capybara - Your Geography Guide" width="250" align="right" style="margin-left: 20px; margin-bottom: 20px;"/>
-
-# 🌍 World Spinner
+<div align="center">
+  <img src="app/public/images/capytan_front.jpeg" alt="Capytan the Capybara - Your Geography Guide" width="200"/>
+  <h1>🌍 World Spinner</h1>
+</div>
 
 A geography-based educational adventure game where young explorers unlock countries, discover fascinating facts about animals, foods, cultures, and world history.
 
@@ -14,9 +15,11 @@ World Spinner is an interactive browser game designed for children aged 7-12. Pl
 
 The game uses intellectually stimulating language without oversimplification, encouraging curiosity and deeper learning through exploration.
 
-## ✨ Features (v0.3.0)
+## ✨ Features (v0.4.0)
 
-- 🎡 **Spin the Globe**: Random country selection with smooth animations
+- 🎡 **Spin the Globe**: Dramatic roulette-style spinning animation with smooth deceleration
+- 🔊 **Sound Effects (NEW)**: Click sounds synchronized with rotation speed—fast at start, slow at end
+- 🔇 **Sound Control (NEW)**: Mute/unmute toggle with preference saved between sessions
 - 🕵️ **Progressive Clues**: Three hints per country (animal, food, flag)
 - ✍️ **Guess & Learn**: Case-insensitive validation with country name aliases
 - 🎉 **Discovery Cards**: Educational facts about each unlocked country
@@ -25,10 +28,10 @@ The game uses intellectually stimulating language without oversimplification, en
 - 🌐 **Internationalization**: Full English and Spanish language support with easy-to-use language switcher
 - 🔄 **Language Persistence**: Your language preference is saved between sessions
 - 👥 **Translation-Ready**: Community-friendly structure for adding new languages
-- 🎯 **Smart Card Removal (NEW)**: Each country appears only once per session—no repetitive discoveries!
-- 📊 **Progress Tracking (NEW)**: See how many countries you've discovered with a live counter
-- 🏆 **Game Completion (NEW)**: Celebrate with an animated congratulations screen when you've found all countries
-- 🔄 **Manual Reset (NEW)**: Start fresh anytime with the reset button—no need to finish the game first
+- 🎯 **Smart Card Removal**: Each country appears only once per session—no repetitive discoveries!
+- 📊 **Progress Tracking**: See how many countries you've discovered with a live counter
+- 🏆 **Game Completion**: Celebrate with an animated congratulations screen when you've found all countries
+- 🔄 **Manual Reset**: Start fresh anytime with the reset button—no need to finish the game first
 ## 🛠️ Tech Stack
 
 - **Frontend**: React (JavaScript)
@@ -297,7 +300,7 @@ See [Ideas.md](./Ideas.md) for all planned features and enhancement ideas.
 
 ## 🙏 Acknowledgments
 
-This game was entirely inspired by my eldest son, Liam, boundless love for learning, with contributions from my creative director, Nolan (my youngest) and advise, supervision, and production assistance from my lovely and multi-talented wife, Carolina. You three are the best things that ever happened to me. 🥰
+This game was entirely dreamed up by my eldest son, Liam, boundless love for learning, with contributions from my creative director, Nolan (his younger brother) and advise, supervision, and production assistance from my lovely and multi-talented wife, Carolina. You three are the best things that ever happened to me. 🥰
 
 Built with curiosity, exploration, and a love of learning in mind.
 
