@@ -7,8 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-11
+
+### Summary
+Complete US-008 globe spinning animation feature. Dramatic roulette-style spinning animation with synchronized click sounds that decelerate as the globe slows, mute control with preference persistence, and critical bug fixes for rotation and audio.
+
 ### Fixed
-- **B-001 (1b85ceb): Fix sound overlapping during globe spin animation** - Implemented audio pooling with 3 Audio instances for sequential playback, tuned spin timing (6s duration, 100-750ms click intervals, clicks stop 1s before end) (2025-12-27, commit: 1b85ceb)
+- **B-003 (025aa22): Fix globe rotation to spin 360°+ forward on each spin** - Implemented cumulative rotation tracking using useRef to ensure globe always spins forward at least 360° on every spin. Previous implementation used absolute rotation targets causing backwards rotations on subsequent spins. Now tracks total cumulative rotation and adds each spin's amount to it. Reset on game restart. All 183 tests passing.
+- **B-001 (1b85ceb): Fix sound overlapping during globe spin animation** - Implemented audio pooling with 3 Audio instances for sequential playback. Round-robin rotation through pool prevents overlap while maintaining click frequency. Modified audioManager.js to accept poolSize option, rotate through instances, and stop all pool instances. Tuned spin timing (6s duration, 100-750ms click intervals, clicks stop 1s before end). All 178 tests passing (17 in audioManager.test.js including 7 new pooling tests). Coverage 86.88% statements, 90% branches. Manual QA verified on desktop (Chrome, Firefox, Safari) and mobile (iOS Safari, Android Chrome). Clean sequential playback confirmed.
 
 ### Added
 - **T-024 (694cead): Integration Tests & Final Verification** - Completed final verification of US-008 globe spinning animation feature. All 171 tests passing (164 original + 10 audioManager + 7 clickInterval). ESLint clean (0 errors, 0 warnings). Verified localStorage persistence for soundMuted preference. Verified animation + sound synchronization working correctly. Verified mute toggle functionality. Verified cleanup (timeouts cleared, audio stopped). Verified accessibility (ARIA labels translated to English/Spanish). Verified cross-browser compatibility (HTML5 Audio API, localStorage, Framer Motion). No performance bottlenecks. Test suite runs in ~25 seconds. Feature complete and ready for deployment. Fifteenth and final task in US-008 sequence.

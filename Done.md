@@ -331,3 +331,67 @@ Add a discrete "Reset Progress" button that allows players to manually clear the
 **Completion Notes**: Approved by HG - Manual reset button provides player control and flexibility to restart discovery journey at any time.
 
 **Completed**: v0.3.0
+
+---
+
+## Completed Bugs
+
+### B-001: Sound Overlapping During Globe Spin Animation
+**Status**: Done | **Parent Story**: US-008 | **Priority**: Critical | **Retries**: 1 (successful)
+**Started**: 2025-12-27 | **Completed**: 2025-12-28
+**Commits**: 1b85ceb
+
+Sound effects were overlapping and stacking during globe spin animation, creating chaotic audio playback instead of clean sequential clicks.
+
+**Root Cause**:
+Single shared Audio instance (`clickSoundRef.current`) played repeatedly at short intervals (50-300ms). When `playClick()` was called before the previous sound finished, it reset `currentTime = 0` and called `play()` again, causing browser's audio engine to stack multiple play operations on the same instance.
+
+**Solution Implemented**:
+- Audio pooling with 3 Audio instances for sequential playback
+- Round-robin rotation through pool prevents overlap while maintaining click frequency
+- Modified `preloadSound()` to accept `{ poolSize: 3 }` option
+- Modified `playClick()` to rotate through pool
+- Modified `stopAllSounds()` to stop all pool instances
+- Maintained backward compatibility for single Audio instance usage
+- Tuned spin timing: 6s duration, 100-750ms click intervals, clicks stop 1s before end
+
+**Review Notes**: All acceptance criteria met. Tests 178 passing (17 in audioManager.test.js including 7 new pooling tests). Coverage 86.88% statements, 90% branches. Build successful. ESLint 0 errors, 0 warnings.
+
+**Completion Notes**: Approved by HG after manual testing on desktop (Chrome, Firefox, Safari) and mobile (iOS Safari, Android Chrome). Manual QA confirmed clean sequential playback with no overlapping sounds. Audio deceleration effect smooth and matches visual animation.
+
+**Completed**: v0.4.0
+
+---
+
+### B-003: Globe Does Not Spin 360° + Random on Each Spin After First
+**Status**: Done | **Parent Story**: US-008 | **Priority**: Critical | **Retries**: 0
+**Started**: 2025-12-28 | **Completed**: 2026-01-11
+**Commits**: 025aa22
+
+The globe did not complete a full 360° rotation plus random additional rotation on each spin after the first spin. Instead, it animated to absolute rotation values, causing backwards rotations or incomplete cycles.
+
+**Root Cause**:
+Framer Motion's `animate()` function animates **TO** an absolute value, not **BY** a relative amount. The code at `App.jsx:180` (`await animate('.spinning-globe', { rotate: totalDegrees }, ...)`) treated `totalDegrees` as an absolute target rotation value. Since `calculateSpinRotation()` returns a fresh random value between 360-720° on each call, subsequent spins animated from the current rotation to the new absolute value, which could be less than the current rotation (causing backwards motion) or not a full cycle.
+
+**Solution Implemented**:
+- Added `cumulativeRotationRef = useRef(0)` to track cumulative rotation across spins
+- Modified `spinGlobe()` to add each spin's rotation to the cumulative total
+- Animate to cumulative value: `animate('.spinning-globe', { rotate: cumulativeRotationRef.current }, ...)`
+- Reset cumulative rotation to 0 in `handleResetProgress()` when game is reset
+- 5 comprehensive tests added to App.test.js verifying cumulative behavior
+
+**Review Notes**: All acceptance criteria met. Tests 183 passing (5 new B-003 tests). Build successful. ESLint 0 errors.
+
+**Acceptance Criteria** (all met):
+- [x] First spin rotates 360° + random(0-360°) forward
+- [x] Second spin rotates 360° + random(0-360°) forward FROM ending position of first spin
+- [x] Third and subsequent spins each rotate 360° + random(0-360°) forward
+- [x] Globe never rotates backwards
+- [x] Globe never rotates less than 360° per spin
+- [x] Visual verification: Globe completes at least one full rotation on every spin
+- [x] Tests verify cumulative rotation increases monotonically
+- [x] Coverage ≥80% on modified code
+
+**Completion Notes**: Implementation uses Option A (cumulative tracking with useRef) as recommended in task brief. Pattern mirrors audioManager.js poolIndex tracking. All 183 tests pass.
+
+**Completed**: v0.4.0

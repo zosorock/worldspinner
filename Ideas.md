@@ -181,7 +181,7 @@ Each entry gets an **I-###** ID.
   - **date:** 2025-11-02
   - **priority:** 6
   - **notes:** Interactive spinning globe animation triggered by the "Spin the Globe" button. Instead of the traditional globe rotation (spinning on its axis), implement a clock-hand style spin animation where the globe rotates around a central pivot point like a roulette wheel or prize wheel. This creates a more dramatic and anticipation-building effect before revealing the mystery country. The animation should be smooth, visually engaging, and appropriate for the target age group (6-12 years old). Consider adding sound effects during the spin and a satisfying "stop" animation when the country is revealed.
-  - **status:** Promoted to US-008 (2025-11-09). Simple roulette click sounds NOW IN SCOPE as core mechanic - not a future enhancement. Complex sound effects/music remain deferred.
+  - **status:** Implemented in US-008 [Unreleased]. Globe spins 360°+ with easeOut deceleration, roulette-style click sounds with audio pooling, mute control with localStorage persistence. Complex sound effects/music remain deferred to future enhancements.
 
 - **I-031** Auto-Dismiss Feedback Banners
   - **source:** Human Gatekeeper

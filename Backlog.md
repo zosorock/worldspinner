@@ -563,7 +563,7 @@ Write full integration tests that verify the entire feature from button click th
 ## Active Bugs
 
 ### B-001: Sound Overlapping During Globe Spin Animation
-**Status**: In Progress | **Parent Story**: US-008 | **Priority**: Critical | **Owner**: Developer | **Retries**: 0
+**Status**: Done | **Parent Story**: US-008 | **Priority**: Critical | **Owner**: Human Gatekeeper | **Retries**: 1 (successful)
 
 Sound effects overlap and stack during globe spin animation, creating chaotic audio playback instead of clean sequential clicks.
 
@@ -599,8 +599,8 @@ Overlapping, stacking click sounds creating audio chaos. Multiple instances of t
 - [x] Each click completes before the next one starts
 - [x] Audio deceleration effect is smooth and matches visual animation
 - [x] No audio chaos or stacking sounds
-- [ ] Solution works on desktop (Chrome, Firefox, Safari) - **REQUIRES MANUAL QA**
-- [ ] Solution works on mobile (iOS Safari, Android Chrome) - **REQUIRES MANUAL QA**
+- [x] Solution works on desktop (Chrome, Firefox, Safari) - VERIFIED BY HG
+- [x] Solution works on mobile (iOS Safari, Android Chrome) - VERIFIED BY HG
 - [x] Tests verify no overlapping playback
 - [x] Coverage ≥80% on modified code
 
@@ -636,6 +636,9 @@ Manual QA must verify on the following browsers:
 - This is the highest priority bug identified in US-008 assessment
 - Audio pooling solution prevents dropped clicks while avoiding overlap
 - Rotation index tracked in module-level variable for stateful round-robin behavior
+- COMPLETED: Human Gatekeeper approved after manual testing on desktop and mobile
+- Manual QA confirmed clean sequential playback with no overlapping sounds
+- Approved At: 2025-12-28
 
 ---
 
@@ -680,76 +683,6 @@ Mute button changes state, but pre-scheduled click sounds continue to play until
 **Notes**:
 - Identified as "Moderate" issue in US-008 assessment
 - User experience issue: Players expect immediate response to mute control
-
----
-
-### B-003: Globe Does Not Spin 360° + Random on Each Spin After First
-**Status**: Ready | **Parent Story**: US-008 | **Priority**: Critical | **Owner**: Scrum Master | **Retries**: 0
-
-The globe does not complete a full 360° rotation plus random additional rotation on each spin after the first spin. Instead, it animates to absolute rotation values, causing backwards rotations or incomplete cycles.
-
-**Root Cause**:
-Framer Motion's `animate()` function animates **TO** an absolute value, not **BY** a relative amount. The code at line 179 (`await animate('.spinning-globe', { rotate: totalDegrees }, ...)`) treats `totalDegrees` as an absolute target rotation value. Since `calculateSpinRotation()` returns a fresh random value between 360-720° on each call, subsequent spins animate from the current rotation to the new absolute value, which can be less than the current rotation (causing backwards motion) or not a full cycle.
-
-**Example Rotation Behavior**:
-- Spin 1: 0° → 540° = **540° rotation** ✓ (360° + 180° as intended)
-- Spin 2: 540° → 450° = **-90° rotation** ✗ (BACKWARDS!)
-- Spin 3: 450° → 680° = **230° rotation** ✗ (only 230°, not a full cycle)
-
-**Steps to Reproduce**:
-1. Click "Spin the Globe" button (first spin works correctly)
-2. After globe stops, click "Spin the Globe" again
-3. Observe: Globe may rotate backwards or less than 360°
-4. Click again: Rotation amount varies randomly, sometimes backwards
-
-**Expected Behavior**:
-Each spin should rotate the globe exactly 360° + random(0-360°) in the forward direction FROM its current position, regardless of how many times it has been spun.
-
-**Actual Behavior**:
-First spin rotates correctly (360° + random). Subsequent spins animate to absolute rotation values, causing:
-- Backwards rotations when new `totalDegrees` < current rotation
-- Incomplete rotations when difference is less than 360°
-- Random rotation amounts that don't respect the 360° + random rule
-
-**Technical Details**:
-- Affected code: `app/src/App.jsx` line 179 (Framer Motion animate call)
-- Affected code: `app/src/utils/spinAnimation.js` lines 22-40 (calculateSpinRotation returns absolute value)
-- Issue: `rotate: totalDegrees` is an absolute target, not a relative rotation amount
-- Framer Motion animates FROM current rotation TO `totalDegrees` value
-
-**Suggested Fix Approaches**:
-1. **Option A (Cumulative tracking)**: Track cumulative rotation in state/ref, add new spin amount to it each time
-   ```javascript
-   // Store cumulative rotation
-   const cumulativeRotation = useRef(0);
-
-   // In spinGlobe:
-   const { spinAmount, duration } = calculateSpinRotation(); // Rename totalDegrees to spinAmount
-   cumulativeRotation.current += spinAmount; // Add to cumulative
-   await animate('.spinning-globe', { rotate: cumulativeRotation.current }, ...);
-   ```
-
-2. **Option B (Reset before each spin)**: Reset rotation to 0° before each spin, then animate to totalDegrees
-   - But HG said they like continuing from where it stopped, so this is less preferred
-
-3. **Option C (Relative animation syntax)**: Use Framer Motion's relative value syntax if available
-   - Research if Framer Motion supports `rotate: "+=540"` style animations
-
-**Acceptance Criteria**:
-- [ ] First spin rotates 360° + random(0-360°) forward
-- [ ] Second spin rotates 360° + random(0-360°) forward FROM the ending position of first spin
-- [ ] Third and subsequent spins each rotate 360° + random(0-360°) forward
-- [ ] Globe never rotates backwards
-- [ ] Globe never rotates less than 360° per spin
-- [ ] Visual verification: Globe completes at least one full rotation on every spin
-- [ ] Tests verify cumulative rotation increases monotonically
-- [ ] Coverage ≥80% on modified code
-
-**Notes**:
-- This is a **CRITICAL violation** of US-008 Acceptance Criteria #1: "Globe always spins at least 360° (one full rotation)"
-- HG Feedback: "it is not spinning 360+rand(360)"
-- First spin works correctly, but the bug manifests on all subsequent spins
-- Issue identified during US-008 acceptance review
 
 ---
 
