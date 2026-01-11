@@ -99,6 +99,8 @@ const App = () => {
   const clickTimeoutsRef = useRef([]);
   // B-003: Track cumulative rotation for forward-only spinning
   const cumulativeRotationRef = useRef(0);
+  // B-004: Token to detect reset during an active spin
+  const spinTokenRef = useRef(0);
   // T-013: Framer Motion animation scope for globe rotation
   const [scope, animate] = useAnimate();
 
@@ -152,6 +154,7 @@ const App = () => {
 
     // T-011: Set spinning state to prevent multiple simultaneous spins
     setIsSpinning(true);
+    const spinToken = spinTokenRef.current;
 
     // T-012: Calculate rotation degrees and duration
     const { totalDegrees, duration } = calculateSpinRotation();
@@ -189,6 +192,12 @@ const App = () => {
     // T-020: Clear any remaining scheduled clicks after animation completes
     clickTimeoutsRef.current.forEach(clearTimeout);
     clickTimeoutsRef.current = [];
+
+    // B-004: Guard against reset during spin before applying state updates
+    if (spinTokenRef.current !== spinToken) {
+      setIsSpinning(false);
+      return;
+    }
 
     // T-015: After animation completes, reveal the mystery country
     const nextCard = availableCountries[Math.floor(Math.random() * availableCountries.length)];
@@ -251,11 +260,19 @@ const App = () => {
     setGuess('');
   };
 
-  const handleResetProgress = () => {
+  const handleResetProgress = async () => {
     // Clear any pending timeout to prevent race conditions
     if (resetTimeoutRef.current) {
       clearTimeout(resetTimeoutRef.current);
       resetTimeoutRef.current = null;
+    }
+    spinTokenRef.current += 1;
+    setIsSpinning(false);
+    // B-004: Clear any scheduled click sounds during reset
+    clickTimeoutsRef.current.forEach(clearTimeout);
+    clickTimeoutsRef.current = [];
+    if (clickSoundRef.current) {
+      stopAllSounds(clickSoundRef.current);
     }
     setDiscoveredIds([]);
     setActiveCountryId(null);
@@ -266,6 +283,8 @@ const App = () => {
     setResetConfirmPending(false);
     // B-003: Reset cumulative rotation for fresh game start
     cumulativeRotationRef.current = 0;
+    // B-004: Sync DOM rotation to avoid backwards spins after reset
+    await animate('.spinning-globe', { rotate: 0 }, { duration: 0 });
   };
 
   const handleManualReset = () => {

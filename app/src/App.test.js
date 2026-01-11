@@ -4,6 +4,13 @@ import userEvent from '@testing-library/user-event';
 import { renderWithTranslation } from './test-utils/translationTestUtils';
 import App from './App';
 import countryCards from './data/countryCards';
+import { preloadSound, stopAllSounds } from './utils/audioManager';
+
+jest.mock('./utils/audioManager', () => ({
+  preloadSound: jest.fn(() => Promise.resolve(null)),
+  playClick: jest.fn(),
+  stopAllSounds: jest.fn(),
+}));
 
 // T-013: Mock Framer Motion's useAnimate hook for testing
 // Animation completes immediately in tests instead of taking 6 seconds
@@ -33,6 +40,8 @@ const getRotationCalls = () =>
 beforeEach(() => {
   mockAnimateCalls = [];
   mockAnimate.mockClear();
+  preloadSound.mockClear();
+  stopAllSounds.mockClear();
 });
 
 // T-011: Helper to wait for spinning animation state to complete
@@ -1358,5 +1367,187 @@ describe('B-003: Sequential spin rotation verification', () => {
     const rotationsAfterReset = getRotationCalls();
     // After reset, first spin should be 540° (not 1080° which would be cumulative)
     expect(rotationsAfterReset[0]).toBe(540);
+  });
+});
+
+describe('B-004: Reset during spin race conditions', () => {
+  let mathRandomSpy;
+
+  beforeEach(() => {
+    mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  test('reset during spin keeps game reset after animation completes', async () => {
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
+
+    await userEvent.dblClick(resetButton);
+
+    await act(async () => {
+      resolveSpin();
+    });
+
+    await waitForSpinComplete();
+
+    expect(screen.getByText(/Spin the globe to get your first animal clue/i)).toBeInTheDocument();
+  });
+
+  test('reset during spin clears click sounds', async () => {
+    const mockAudioPool = [{ paused: true, play: jest.fn(), pause: jest.fn(), currentTime: 0 }];
+    preloadSound.mockResolvedValueOnce(mockAudioPool);
+
+    renderWithTranslation(<App />);
+    await waitFor(() => expect(preloadSound).toHaveBeenCalled());
+    await act(async () => {
+      await preloadSound.mock.results[0].value;
+    });
+
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    await userEvent.click(resetButton);
+    await userEvent.click(resetButton);
+
+    expect(stopAllSounds).toHaveBeenCalledWith(mockAudioPool);
+
+    await act(async () => {
+      resolveSpin();
+    });
+  });
+
+  test('reset syncs rotation to 0 and next spin rotates forward', async () => {
+    mathRandomSpy
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0);
+
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+    await userEvent.dblClick(resetButton);
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const rotations = getRotationCalls();
+    expect(rotations).toContain(0);
+    expect(rotations[rotations.length - 1]).toBe(540);
+  });
+
+  test('multiple rapid resets keep game reset after spin resolves', async () => {
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
+
+    await userEvent.dblClick(resetButton);
+    await userEvent.dblClick(resetButton);
+
+    await act(async () => {
+      resolveSpin();
+    });
+
+    await waitForSpinComplete();
+    expect(screen.getByText(/Spin the globe to get your first animal clue/i)).toBeInTheDocument();
+  });
+
+  test('spin button re-enables after reset cancels an in-flight spin', async () => {
+    renderWithTranslation(<App />);
+    const spinButton = screen.getByRole('button', { name: /spin the globe/i });
+
+    await userEvent.click(spinButton);
+    await waitForSpinComplete();
+
+    const guessField = screen.getByLabelText(/guess the country/i);
+    await userEvent.type(guessField, countryCards[0].displayName);
+    await userEvent.click(screen.getByRole('button', { name: /submit guess/i }));
+
+    const resetButton = screen.getByRole('button', { name: /reset progress/i });
+
+    let resolveSpin;
+    mockAnimate.mockImplementationOnce((selector, keyframes) => {
+      mockAnimateCalls.push({ selector, keyframes });
+      return new Promise((resolve) => {
+        resolveSpin = resolve;
+      });
+    });
+
+    await userEvent.click(spinButton);
+    expect(spinButton).toBeDisabled();
+
+    await userEvent.dblClick(resetButton);
+    expect(spinButton).not.toBeDisabled();
+
+    await act(async () => {
+      resolveSpin();
+    });
   });
 });
