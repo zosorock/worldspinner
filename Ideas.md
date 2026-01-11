@@ -63,6 +63,7 @@ Each entry gets an **I-###** ID.
   - **source:** Human Gatekeeper
   - **date:** 2025-11-01
   - **notes:** Audio/visual polish including whooshes, celebration sounds, and cheerful color palette featuring teal. Playful sounds and bright colors for engagement. UI should be intuitive for younger children while not feeling babyish to older kids.
+  - **status:** Partially implemented. Teal color theme in [0.1.0], roulette click sounds in [0.4.0]. Celebration sounds/whooshes deferred.
 
 - **I-010** Mini Missions and Challenges
   - **source:** Human Gatekeeper
@@ -117,11 +118,13 @@ Each entry gets an **I-###** ID.
   - **source:** Product Owner
   - **date:** 2025-11-01
   - **notes:** Smooth transitions between game states (spin → clue reveal → guess → discovery card). Satisfying animations for correct/incorrect answers, card flips, world spin. Snappy, playful animations make the game feel polished and fun.
+  - **status:** Implemented in [0.1.0] with Framer Motion. Globe spin animation enhanced in [0.4.0].
 
 - **I-020** Visual Feedback for Interactions
   - **source:** Product Owner
   - **date:** 2025-11-01
   - **notes:** Immediate visual feedback for all user interactions. Button hover states, click animations, correct/incorrect answer indicators, progress bar fills. Responsive UI elements make the game feel alive.
+  - **status:** Implemented in [0.1.0]. Button hover/active states, feedback banners for correct/incorrect, Framer Motion tap animations.
 
 - **I-021** Full Country Database Expansion
   - **source:** Product Owner
@@ -144,12 +147,14 @@ Each entry gets an **I-###** ID.
   - **date:** 2025-11-01
   - **priority:** 7
   - **notes:** Simple CONTRIBUTING.md section explaining how community members can add a new language. Include JSON structure, naming conventions, and basic PR guidelines. Keep it lightweight and welcoming. Deferred: Automated validation tools, translation management platforms, complex review workflows.
+  - **status:** Implemented in [0.2.0] via T-005. Comprehensive "Adding a New Language" section in README.md with 5 step-by-step subsections.
 
 - **I-025** Internationalize ARIA Label Attributes for Accessibility
   - **source:** Code Reviewer (T-001 review via ask-codex)
   - **date:** 2025-11-01
   - **priority:** 4
   - **notes:** Externalize hardcoded ARIA label strings in App.jsx to translation files (en.json, es.json) to support screen readers in multiple languages. Current hardcoded strings include Capytan image label and flag card labels. Related to US-005 but marked out-of-scope for T-001 by Human Gatekeeper.
+  - **status:** Implemented in [0.2.0] (T-004) and [0.4.0] (T-021). ARIA labels for Capytan, country flags, spinning globe, and sound toggle all internationalized.
 
 - **I-026** Rename 'greeting' Field to 'expression' for Greater Variety
   - **source:** Human Gatekeeper
@@ -181,7 +186,7 @@ Each entry gets an **I-###** ID.
   - **date:** 2025-11-02
   - **priority:** 6
   - **notes:** Interactive spinning globe animation triggered by the "Spin the Globe" button. Instead of the traditional globe rotation (spinning on its axis), implement a clock-hand style spin animation where the globe rotates around a central pivot point like a roulette wheel or prize wheel. This creates a more dramatic and anticipation-building effect before revealing the mystery country. The animation should be smooth, visually engaging, and appropriate for the target age group (6-12 years old). Consider adding sound effects during the spin and a satisfying "stop" animation when the country is revealed.
-  - **status:** Implemented in US-008 [Unreleased]. Globe spins 360°+ with easeOut deceleration, roulette-style click sounds with audio pooling, mute control with localStorage persistence. Complex sound effects/music remain deferred to future enhancements.
+  - **status:** Implemented in [0.4.0] via US-008. Globe spins 360°+ with easeOut deceleration, roulette-style click sounds with audio pooling, mute control with localStorage persistence. Complex sound effects/music remain deferred to future enhancements.
 
 - **I-031** Auto-Dismiss Feedback Banners
   - **source:** Human Gatekeeper

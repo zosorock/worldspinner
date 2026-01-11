@@ -14,10 +14,10 @@
 - **Out of Scope - Day 1 (Deferred Post-Launch)**:
   - Progression systems (passport stamps, badges, explorer levels)
   - World map visualization and puzzle mechanics
-  - Game host character (Capytan the capybara)
+  - Game host character (Capytan the capybara) - text tips implemented, visual character deferred
   - Extensive country database (20+ countries)
   - Deep educational content (historical civilizations, anthropology, astronomy)
-  - Audio effects and complex animations
+  - Complex audio (celebration sounds, background music) - basic click sounds implemented in v0.4.0
   - Game modes (mini missions, multiplayer, offline mode)
   - Advanced i18n features (RTL, cultural adaptation, complex validation)
 
@@ -75,6 +75,25 @@ Clean, playful visual design optimized for the 7-12 age range, working seamlessl
 4. *Performance*: Page loads in <2 seconds on 3G connection, smooth 60fps animations
 5. *Quality Gates*: Tailwind CSS utility classes, no inline styles, follows Airbnb style guide
 
+### F-004. Globe Animation & Sound Effects
+Dramatic roulette-style spinning animation with synchronized audio feedback that builds anticipation before revealing the mystery country.
+
+**Functional Capabilities**
+- Globe visual element rotates with Framer Motion animation
+- Cumulative rotation tracking (360°+ forward per spin, never backwards)
+- EaseOut deceleration curve mimicking real roulette wheel physics
+- Click sounds synchronized with rotation speed (fast→slow)
+- Audio pooling to prevent sound overlap
+- Mute/unmute control with localStorage persistence
+- Accessible sound toggle with internationalized ARIA labels
+
+**Acceptance Criteria**
+1. *Globe Rotation*: Each spin rotates 360-720° forward from current position, never backwards, with smooth easeOut deceleration
+2. *Sound Sync*: Click sounds play at 50ms intervals (start) decelerating to 300ms intervals (end), matching visual rotation speed
+3. *Audio Control*: Mute button toggles sound, preference persists across sessions via localStorage
+4. *Cross-Browser*: Works on Chrome, Firefox, Safari (desktop) and iOS Safari, Android Chrome (mobile)
+5. *Quality Gates*: Jest tests ≥80% coverage, ESLint passes, graceful degradation when Audio API unavailable
+
 ## Cross-Cutting Requirements
 - **Code Quality**: Jest test coverage ≥80%, ESLint (Airbnb config, line length not enforced), Prettier formatting (120 char limit)
 - **Browser Support**: Modern browsers (Chrome, Firefox, Safari, Edge) - last 2 versions
@@ -84,9 +103,9 @@ Clean, playful visual design optimized for the 7-12 age range, working seamlessl
 - **Deployment**: Static site deployment (no backend required for Day 1)
 
 ## Traceability & Governance
-- Completed user stories tracked in Done.md (US-001 through US-007)
+- Completed user stories tracked in Done.md (US-001 through US-008)
 - Active development tracked in Backlog.md
-- Future enhancements cataloged in Ideas.md (I-001 through I-024)
+- Future enhancements cataloged in Ideas.md (I-001 through I-036)
 - Product vision and feature definitions maintained in this document (AppSpec.md)
 - All implementation must adhere to DoD.md, GuardRails.md, RACI.md, and Evals.md
 - Human Gatekeeper approval required before any story moves to Done status
